@@ -1,3 +1,9 @@
 *.olean
 /_target
 /leanpkg.path
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.pdf
+*.synctex.gz
