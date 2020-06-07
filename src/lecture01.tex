@@ -2,7 +2,7 @@
 \usepackage{amsmath,amssymb,amsthm}
 \newcommand{\RR}{\mathbb{R}}
 \newcommand{\GL}{\text{GL}}
-\newcommand{\inv}[1]{#1^{-1}}}
+\newcommand{\inv}[1]{#1^{-1}}
 \theoremstyle{definition}
 \newtheorem*{fact}{Fact}
 \newtheorem*{defn}{Definition}
@@ -174,7 +174,7 @@ from the multidimentional vector space.
 
 We're not interested in all of \(n \times n\) matrices, but a subset called
 
-\(\GL_n(\RR)\subset M_n(\RR) = \{A: \det A\neq 0\} = \{A: \text{there is an unique inverse matrix }\inv{A}\}\)
+\(\GL_n(\RR)\subset M_n(\RR) = \{A: \det A\neq 0\} = \{A: \text{there is an unique inverse matrix }\inv{A}\} \)
 
 For \(\GL_1\) matrices, everything but 0.
 
@@ -215,16 +215,16 @@ This is the first and most important example of a group.
 
 A group \(G\) is a set with a product operation \(g,h\in G: g\cdot h\in G\), which is
 
-1) associative \(g(hk) = (gh)k\)
+1.\ associative \(g(hk) = (gh)k\)
 
-2) has an identity element \(e\) or \(1\), \(eg=ge=g\)
+2.\ has an identity element \(e\) or \(1\), \(eg=ge=g\)
 
-3) has inverses \(\inv{g}: g\inv{g}=\inv{g}g=e\)
+3.\ has inverses \(\inv{g}: g\inv{g}=\inv{g}g=e\)
 
 It does not have to be commutative. If \(gh=hg\) for all pairs, say \(G\) is commutative or Abelian.
 Even the \(2 \times 2\) matrix aren't all commutative.
 
-An Abelian group: \(\mathbb{Z} = \{0, \pm1, \pm2, \pm3, \ldots\}\),
+An Abelian group: \(\mathbb{Z} = \{0, \pm1, \pm2, \pm3, \ldots\} \),
 with product as addition \(a + b\). We have \(e = 0, a+0=a, \inv{a}=-a\).
 
 Any vector space \(V\) is a Abelian group. Just forget about scalar multiplication. Product is addition.
