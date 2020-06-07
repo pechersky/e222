@@ -1,0 +1,249 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\GL}{\text{GL}}
+\newcommand{\inv}[1]{#1^{-1}}}
+\theoremstyle{definition}
+\newtheorem*{fact}{Fact}
+\newtheorem*{defn}{Definition}
+
+\begin{document}
+
+\author{Yakov Pechersky}
+
+\title{Lecture 01}
+
+\maketitle
+\section{Lecture}
+Required linear algebra to generate examples of groups.
+\\
+
+The set of \( n \times n \) matrices.
+The notation used is \(i\)th row and \(j\)th column, so that
+entry is \(a_{ij}\). The first entry is \(a_{11}\), then \(a_{12}\),
+up to \(a_{1n}\). Last row is \(a_{n1}, \ldots, a_{nn}\).
+
+Entries of a matrix are numbers, according to Artin. Before the theories of
+rings or vector spaces or abstract fields, take the entries to be real numbers
+\( a_{ij} \in \RR \). Call the collection of all such \( n \times n \) matrices
+as \( M_n(\RR)\). That is a vector space over the real numbers, of dimension \(n^2\).
+
+You can add matrices \(A, B\), with entries \((a_{ij}), (b_{ij})\), then
+\(A + B = (a_{ij} + b_{ij})\), adding the elements in the \(i,j\)th place.
+That's the addition law in the vector space of \(n \times n\) matrices.
+
+You can also multiply by a real scalar \(\alpha\in\RR \) such that
+\(\alpha\cdot A =(\alpha\cdot a_{ij})\).
+
+This makes this a \( \RR \) vector space of \( \dim n^2 \). For some basis.
+
+This would be true for \(m \times n\) matrices as well. But here, you can also
+multiply them.
+\\
+
+Multiplication of \(n \times n\) matrices.
+
+\begin{equation}
+\begin{split}
+ A \cdot B & = (c_{ij}) \\
+ & = \sum_k a_{ik}b_{kj}
+\end{split}
+\end{equation}
+
+What do matrices represent? Linear operators from
+\(\RR^n \xrightarrow[T]{} \RR^n\),
+where \(T\) is a linear transformation.
+Then the multiplication of matrices is
+the composition of transformations.
+
+Then we have
+\[\RR^n\xrightarrow[S]{\text{map by} B}\RR^n\xrightarrow[T]{\text{map by} A}\RR^n\]
+
+This may not be equal to doing \(T\) and then \(S\). We do have 
+that \(A + B = B + A\), but it is not necessarily true that
+\(A \cdot B \neq B \cdot A\). Here is an example of not equality.
+
+We have to use \(2 \times 2\) matrices, since multiplication of
+\(1 \times 1\) matrices is just multiplication of real numbers, which is
+commutative.
+
+\[
+\begin{bmatrix}
+    0 & 1\\
+    0 & 0
+\end{bmatrix}
+\begin{bmatrix}
+    0 & 0\\
+    0 & 1
+\end{bmatrix} =
+\begin{bmatrix}
+    0 & 1\\
+    0 & 0
+\end{bmatrix}\]
+\[
+\begin{bmatrix}
+    0 & 0\\
+    0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+    0 & 1\\
+    0 & 0
+\end{bmatrix} =
+\begin{bmatrix}
+    0 & 0\\
+    0 & 0
+\end{bmatrix}
+\] 
+
+The zero matrix is the zero element of the vector space.
+When you add it to any element, you get the same.
+\\
+
+Call the identity matrix 
+\[I = \begin{pmatrix}
+1 & & & & \mbox{\normalfont\Large\bfseries 0}\\
+& 1 & & & \\
+& & \ddots & & \\
+& & & 1 & \\
+\mbox{\normalfont\Large\bfseries 0} & & & & 1
+\end{pmatrix}\]
+which is distinguished that multiplying anything by \( I \),
+you get the anything back
+\[0 + A = A + 0 = A\]
+\[A\cdot I = I \cdot A = A\]
+
+There is also the distributive law
+\[A(B+C) = AB + AC\]
+and the associative law 
+\[A(BC) = (AB)C\]
+
+The normal laws of arithmetic except for the commutativity of multiplication.
+
+Proving associativity is hideous if doing it by element.
+\[\RR^n\xrightarrow[U]{\text{map by } C}\RR^n\xrightarrow[S]{\text{map by } B}\RR^n\xrightarrow[T]{\text{map by } A}\RR^n\]
+By composition of transformation, associative law is obvious.
+\\
+
+A much trickier question about \(n \times n\) matrices is inversion.
+We say \(A\) is invertible iff \(\exists \) a matrix \(B : AB = BA = I\).
+
+This is tricky business, since not matrices are invertible. The zero matrix is never invertible.
+\( 0\cdot A = A \cdot 0 = 0\). But \(I\) is invertible. Take \(B=I\).
+
+For \(1 \times 1\) matrices \((a)\) is invertible iff \(a \neq 0\). \(B = (\frac{1}{a})\).
+
+For \(2 \times 2\) matrices \(A = \left(\begin{smallmatrix}
+    a & b\\
+    c & d
+\end{smallmatrix}\right)\) is invertible iff \(ad - bc \neq 0\).
+
+Then, \(A^{-1}=\frac{1}{ad-bc}\left(\begin{smallmatrix}
+    d & -b\\
+    -c & a
+\end{smallmatrix}\right)\).
+\[
+\begin{pmatrix}
+    a & b\\
+    c & d
+\end{pmatrix}
+\begin{pmatrix}
+    d & -b\\
+    -c & d
+\end{pmatrix}
+=
+\begin{pmatrix}
+    ad-bc & 0\\
+    0 & ad-bc 
+\end{pmatrix}
+\]
+In general, the question of whether a matrix is invertible
+uses the determinant \(\det : M_n(\RR)\rightarrow\RR \).
+For a \(2 \times 2\) matrix \(A\), \(\det A = ad-bc\).
+For a general \(A\), \[\det(A) = \sum_{m! \text{ terms}}(\pm1)(\text{product of m matrix entries})\]
+\begin{fact}
+\(A\) is invertible \(\iff \det(A)\neq 0\).
+\end{fact}
+In this case, there is a formula for the inverse of \(A\).
+That is, \(\exists_{\text{natural}} B: AB = BA = \det(A)\cdot I\).
+But the formula for the determinant is about as useful as the formula
+for multiplication of matrices using elements.
+
+The determinant is the action of an operator on a single dimensional vector space constructed
+from the multidimentional vector space.
+\\
+
+We're not interested in all of \(n \times n\) matrices, but a subset called
+
+\(\GL_n(\RR)\subset M_n(\RR) = \{A: \det A\neq 0\} = \{A: \text{there is an unique inverse matrix }\inv{A}\}\)
+
+For \(\GL_1\) matrices, everything but 0.
+
+For \(\GL_2\) matrices, for example, not \(\left[\begin{smallmatrix}
+    0 & 1\\
+    0 & 0
+\end{smallmatrix}\right]\), since the determinant is 0.
+
+It is defined by the non-vanishing of a certain polynomial given by the determinant.
+
+If the inverse exists, it is unique. There aren't two different matrices that serve as an inverse.
+
+Suppose \(A\cdot B = A\cdot C = I\). But inverses are inverses on the left and the right.
+Then \(B(AB) = B(AC)\). Use the associate law: \((BA)B = (BA)C\). Now, by inverses,
+\(I\cdot B = I\cdot C\), so then \(B = C\).
+\\
+
+What are the properties of this subset? We gain and we lose by choosing this \(\GL_n\) subset. 
+There is no addition defined on the set \(\GL_n(\RR)\).
+This is true even for \(\GL_1\), like the sum of \(1 + (-1) = 0\).
+So, not closed under addition or scalar multiplication by 0.
+
+But it is closed under multiplication. Two proofs.
+
+Suppose \(A, B\) are invertible. Show that \(A\cdot B\) is invertible. Find an inverse!
+Use \(\inv{B}\cdot\inv{A}\). Then, \((\inv{B}\inv{A})(AB)=\inv{B}(\inv{A}A)B=\inv{B}\cdot I\cdot B=I\cdot\inv{B}\cdot B=I\cdot I=I\)
+Take the determinant definition. The product should have nonzero determinant. We know that
+\(\det(AB) = \det(A)\cdot\det(B)\), and the product of nonzero real numbers is a nonzero real number.
+
+This set also contains the multiplicative identity \(I\).
+
+Has multiplicative inverses \(\inv{A}\), by definition.
+
+The product is associate.
+
+This is the first and most important example of a group.
+\\
+
+A group \(G\) is a set with a product operation \(g,h\in G: g\cdot h\in G\), which is
+
+1) associative \(g(hk) = (gh)k\)
+
+2) has an identity element \(e\) or \(1\), \(eg=ge=g\)
+
+3) has inverses \(\inv{g}: g\inv{g}=\inv{g}g=e\)
+
+It does not have to be commutative. If \(gh=hg\) for all pairs, say \(G\) is commutative or Abelian.
+Even the \(2 \times 2\) matrix aren't all commutative.
+
+An Abelian group: \(\mathbb{Z} = \{0, \pm1, \pm2, \pm3, \ldots\}\),
+with product as addition \(a + b\). We have \(e = 0, a+0=a, \inv{a}=-a\).
+
+Any vector space \(V\) is a Abelian group. Just forget about scalar multiplication. Product is addition.
+
+Start with any set \(T\). Let \(G = \{\text{all bijections } g:T\rightarrow T\}=\text{Sym}(T)\)
+is a group under composition of transformations. The identity is the identity transformation.
+The inverse is the inverse of a bijection. Composition is associative.
+
+All groups arise on conditions of this invertible bijection.
+
+How did \(\GL_n\) come about? We took all invertible maps of \(\RR^n\rightarrow\RR^n\) that
+preserve the linearity of the vector space, and that is how we got invertible matrices.
+
+Take \(T=\{1,\ldots,n\},\text{Sym}=S_n\), which is a finite group of order \(n!\).
+Even at \(n=3\), which is 6 elements, it is not Abelian.
+
+\section{Problem set}
+\subsection{1.1.7}
+\subsection{1.1.16}
+\subsection{1.1.17}
+
+\end{document}
