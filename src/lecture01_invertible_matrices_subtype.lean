@@ -10,7 +10,7 @@ section invertible
 
 variables (n)
 -- ... Invertible matrices make sense only on spaces that are one-dimensional or larger
-def invertible_matrix := { A : matrix n n R // ∃! (B : matrix n n R), A * B = 1 ∧ B * A = 1 }
+def invertible_matrix := { A : matrix n n R // ∃ (B : matrix n n R), A * B = 1 ∧ B * A = 1 }
 variables {n} {R}
 
 -- ... let's motivate the uniqueness usage by proving uniqueness
@@ -37,22 +37,18 @@ noncomputable def inv_mat (A : invertible_matrix n R) : matrix n n R :=
 classical.some A.property
 
 @[simp] lemma inv_mat_cancel_self (A : invertible_matrix n R) : inv_mat A * A = 1 :=
-(classical.some_spec A.property).1.2
+(classical.some_spec A.property).2
 
 @[simp] lemma mat_cancel_inv_self (A : invertible_matrix n R) : ↑A * inv_mat A = 1 :=
-(classical.some_spec A.property).1.1
+(classical.some_spec A.property).1
 
 lemma inv_mat_has_inv (A : invertible_matrix n R) :
-  ∃! (B : matrix n n R), inv_mat A * B = 1 ∧ B * inv_mat A = 1 :=
+  ∃ (B : matrix n n R), inv_mat A * B = 1 ∧ B * inv_mat A = 1 :=
 begin
   use A.val,
   split,
-  { split,
-    { exact inv_mat_cancel_self _ },
-    { exact mat_cancel_inv_self _ } },
-  { rintros a' ⟨hleft', hright'⟩,
-    refine inv_mat_unique hleft' _,
-    exact mat_cancel_inv_self _ }
+  { exact inv_mat_cancel_self _ },
+  { exact mat_cancel_inv_self _ }
 end
 
 -- noncomputable instance inv_mat_inv : has_inv (invertible_matrix n R) := ⟨inv_mat⟩
@@ -60,19 +56,15 @@ noncomputable instance inv_mat_inv : has_inv (invertible_matrix n R) :=
 ⟨λ A, ⟨inv_mat A, inv_mat_has_inv _⟩⟩
 
 lemma inv_mat_mul_has_inv (A B : invertible_matrix n R) :
-  ∃! (C : matrix n n R), (A.val * ↑B) * C = 1 ∧ C * (↑A * ↑B) = 1 :=
+  ∃ (C : matrix n n R), (A.val * ↑B) * C = 1 ∧ C * (↑A * ↑B) = 1 :=
 begin
-  obtain ⟨Ainv, hA, hAuniq⟩ := A.property,
-  obtain ⟨Binv, hB, hBuniq⟩ := B.property,
+  obtain ⟨Ainv, hA⟩ := A.property,
+  obtain ⟨Binv, hB⟩ := B.property,
   use Binv * Ainv,
   dsimp only [coe_invertible_eq_self] at *,
   split,
-  { split,
-    { rw [mul_assoc, <-mul_assoc _ Binv, hB.1, one_mul, hA.1] },
-    { rw [mul_assoc, <-mul_assoc Ainv, hA.2, one_mul, hB.2] } },
-  { intros C hC,
-    refine inv_mat_unique hC.left _,
-    rw [mul_assoc, <-mul_assoc Ainv, hA.2, one_mul, hB.2]} 
+  { rw [mul_assoc, <-mul_assoc _ Binv, hB.1, one_mul, hA.1] },
+  { rw [mul_assoc, <-mul_assoc Ainv, hA.2, one_mul, hB.2] } 
 end
 
 instance inv_mat_mul : has_mul (invertible_matrix n R) :=
@@ -83,7 +75,7 @@ instance inv_mat_one : has_one (invertible_matrix n R) :=
 
 lemma inv_mat_nonzero (n : ℕ) (npos : 0 < n) (A : invertible_matrix (fin n) R) : A.val ≠ 0 :=
 begin
-  obtain ⟨B, hB, huniq⟩ := A.property,
+  obtain ⟨B, hB⟩ := A.property,
   intros H,
   rw [H, zero_mul] at hB,
   have z : fin n := ⟨0, npos⟩,
