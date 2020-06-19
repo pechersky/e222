@@ -127,7 +127,7 @@ By composition of transformation, associative law is obvious.
 A much trickier question about \(n \times n\) matrices is inversion.
 We say \(A\) is invertible iff \(\exists \) a matrix \(B : AB = BA = I\).
 
-This is tricky business, since not matrices are invertible. The zero matrix is never invertible.
+This is tricky business, since not all matrices are invertible. The zero matrix is never invertible.
 \( 0\cdot A = A \cdot 0 = 0\). But \(I\) is invertible. Take \(B=I\).
 
 For \(1 \times 1\) matrices \((a)\) is invertible iff \(a \neq 0\). \(B = (\frac{1}{a})\).
@@ -174,7 +174,9 @@ from the multidimentional vector space.
 
 We're not interested in all of \(n \times n\) matrices, but a subset called
 
-\(\GL_n(\RR)\subset M_n(\RR) = \{A: \det A\neq 0\} = \{A: \text{there is an unique inverse matrix }\inv{A}\} \)
+\(\GL_n(\RR)\subset M_n(\RR) = \{A: \det A\neq 0\} \)
+
+\(= \{A: \text{there is an unique inverse matrix }\inv{A}\} \)
 
 For \(\GL_1\) matrices, everything but 0.
 
@@ -224,7 +226,7 @@ A group \(G\) is a set with a product operation \(g,h\in G: g\cdot h\in G\), whi
 It does not have to be commutative. If \(gh=hg\) for all pairs, say \(G\) is commutative or Abelian.
 Even the \(2 \times 2\) matrix aren't all commutative.
 
-An Abelian group: \(\mathbb{Z} = \{0, \pm1, \pm2, \pm3, \ldots\} \),
+An Abelian group: \(\mathbb{Z} = \{0, \pm1, \pm2, \pm3, \ldots \} \),
 with product as addition \(a + b\). We have \(e = 0, a+0=a, \inv{a}=-a\).
 
 Any vector space \(V\) is a Abelian group. Just forget about scalar multiplication. Product is addition.
