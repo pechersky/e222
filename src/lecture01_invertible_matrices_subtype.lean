@@ -1,5 +1,4 @@
 import data.matrix.basic
-import linear_algebra.matrix
 import algebra.invertible
 
 open_locale classical
@@ -24,6 +23,8 @@ by delta invertible_matrix; apply_instance
 
 instance coe_fun : has_coe_to_fun (invertible_matrix n R) :=
 ⟨λ _, n -> n -> R, λ A, A.val⟩
+
+@[simp] lemma coe_invertible_fun_eq_self {A : invertible_matrix n R} : ⇑A = A.val := rfl
 
 lemma inv_ext_iff (A B : invertible_matrix n R) : A = B ↔ (∀ i j, A i j = B i j) :=
 iff.trans subtype.ext ⟨λ h i j, congr_fun (congr_fun h i) j, matrix.ext⟩
@@ -111,3 +112,49 @@ noncomputable instance inv_matrix (A : invertible_matrix n R) : invertible A :=
 variables {n}
 
 end invertible
+
+example (A B : invertible_matrix (fin 1) R) (z : fin 1) :
+        A.val ≠ 0 ∧ B z z = 1 / (A z z) ↔ A⁻¹ = B :=
+begin
+  have hz : default (fin 1) = z,
+    by exact subsingleton.elim _ _,
+  have hinv: A⁻¹ * A = 1,
+    from inv_of_mul_self A, 
+  have valinv : A z z ≠ 0 -> A⁻¹ z z = (A z z)⁻¹,
+    { intro nonzero,
+      rw [inv_eq_one_div, (div_eq_iff_mul_eq nonzero).mpr],
+      rw inv_ext_iff at hinv,
+      specialize hinv z z,
+      rwa [inv_mat_mul_apply, inv_mat_one_apply, matrix.one_val_eq, matrix.mul_val,
+            univ_unique, finset.sum_singleton, hz,
+            <-coe_invertible_fun_eq_self, <-coe_invertible_fun_eq_self] at hinv },
+  split,
+  { rintros ⟨hA, hB⟩,
+    have nonzero : A z z ≠ 0,
+      { intros nz,
+        simp at nz,
+        refine hA _,
+        ext i j,
+        rw [matrix.zero_val, subsingleton.elim i z, subsingleton.elim j z, nz] },
+    rw [one_div_eq_inv] at hB,
+    ext i j,
+    rw [subsingleton.elim i z, subsingleton.elim j z, hB, inv_eq_one_div,
+        (div_eq_iff_mul_eq nonzero).mpr, valinv nonzero],
+    exact inv_mul_cancel nonzero },
+  { intro h,
+    have nonzeroA : A.val ≠ 0,
+      from inv_mat_nonzero _ (by linarith) _,
+    split,
+    { exact nonzeroA },
+    { have nz : A z z ≠ 0,
+        { intros h',
+          refine nonzeroA _,
+          ext i j,
+          rw [matrix.zero_val, subsingleton.elim i z, subsingleton.elim j z,
+              <-coe_invertible_fun_eq_self, h'] },
+      refine (eq_div_iff nz).mpr _,
+      rw inv_ext_iff at h,
+      specialize h z z,
+      rw [<-h, valinv nz, inv_mul_cancel nz],
+     } }
+end
