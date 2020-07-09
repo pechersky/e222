@@ -1,7 +1,7 @@
 import data.real.basic
 import data.matrix.notation
 import linear_algebra.matrix
-import algebra.invertible
+import lecture01_invertible_matrices_prop
 
 open_locale big_operators
 
@@ -17,7 +17,7 @@ with a reducible definition because it's just a shell defn -/
 variables {n : ℕ}
 variables (A : MnR n) (B : MnR n) (C : MnR n)
 
--- Call the collection of n × n matrices as Mₙ(ℝ). 
+-- Call the collection of n × n matrices as Mₙ(ℝ).
 -- That is a vector space over the real numbers, of dimension n².
 example : finite_dimensional.findim ℝ (MnR n) = n ^ 2 :=
   by simp [nat.pow_two] -- rw [matrix.findim_matrix, fintype.card_fin, nat.pow_two]
@@ -50,7 +50,7 @@ begin
       matrix.findim_matrix, fintype.card, finset.card_fin, nat.pow_two]
 end
 
-variables {m : ℕ} 
+variables {m : ℕ}
 
 -- An m × n matrix has some finite basis of cardinality m * n
 example : ∃ (b : finset (matrix (fin m) (fin n) ℝ)),
@@ -106,7 +106,7 @@ begin
   replace h := congr_fun (congr_fun h 0) 1,
   norm_num at h,
   exact h,
-end       
+end
 
 -- Zero matrix is the zero element of the vector space,
 -- adding it to any element, you get the same
@@ -123,7 +123,7 @@ example : 1 * A = A := one_mul _
 
 -- Matrix distributive law
 example : A * (B + C) = A * B + A * C :=
-mul_add _ _ _ 
+mul_add _ _ _
 
 -- Matrix associative law
 example : A * (B * C) = A * B * C :=
@@ -133,3 +133,74 @@ example : A * (B * C) = A * B * C :=
 example : (A * (B * C)) = ((A.to_lin.comp B.to_lin).comp C.to_lin).to_matrix :=
 by { rw [linear_map.comp_assoc, <-matrix.mul_to_lin, <-matrix.mul_to_lin,
         to_lin_to_matrix], refl }
+
+-- A 1 x 1 matrix is invertible iff the element is nonzero
+example (A : MnR 1) (z : fin 1) :
+        A ≠ 0 ↔ ∃ B, mat_invertible A B :=
+begin
+  have hz : default (fin 1) = z,
+    from subsingleton.elim _ _,
+  have nonzero : A ≠ 0 -> A z z ≠ 0,
+    { intros nonzeroA nz,
+      refine nonzeroA _,
+      ext i j,
+      simp [subsingleton.elim i z, subsingleton.elim j z, nz] },
+  split,
+  { intros hA,
+    use ![![1 / (A z z)]],
+    split;
+    { ext i j,
+      rw [matrix.mul_eq_mul, matrix.mul_val, subsingleton.elim i z, subsingleton.elim j z],
+      simp [nonzero hA, hz] } },
+  { rintros ⟨B, h⟩,
+    exact inv_mat_nonzero _ _ (by linarith) h }
+end
+
+-- A 2 x 2 matrix is invertible if the discriminant is nonzero, without determinants
+example (A : MnR 2) {a b c d} (hA : A = ![![a, b], ![c, d]]) :
+        a * d - b * c ≠ 0 ↔ ∃ B, mat_invertible A B :=
+begin
+  split,
+  { intros h,
+    use (1 / (a * d - b * c)) • ![![d, -b], ![-c, a]],
+    split;
+      { ext i j,
+        fin_cases i;
+        fin_cases j;
+        field_simp [hA, h];
+        ring } },
+  { intros h H,
+    rcases h with ⟨B, hAB, hBA⟩,
+    rw [<-matrix.ext_iff, hA, matrix.mul_eq_mul] at hBA,
+    simp [mul_cons, matrix.vec_head, matrix.vec_tail] at hBA,
+    let hBA' := hBA 0 0,
+    let hBA'''' := hBA 0 1,
+    let hBA''' := hBA 1 0,
+    let hBA'' := hBA 1 1,
+    have finne : ((0 : fin 2) ≠ 1) := fin.ne_of_vne zero_ne_one,
+    simp [finne] at hBA' hBA'' hBA''' hBA'''',
+    classical,
+    by_cases ha : a = 0;
+    by_cases hb : b = 0;
+    by_cases hc : c = 0;
+    by_cases hd : d = 0,
+    -- at least one element of A is zero
+    any_goals
+      { simp [ha, hb, hc, hd, mul_zero, sub_zero, mul_eq_zero] at H,
+        cases H;
+        simp * at * },
+    -- all elements of A nonzero
+    { have ha' : a = b * c / d,
+        by { rw eq_div_iff hd, rw <-sub_eq_zero, exact H },
+      change (a * B 0 0 + c * B 0 1 = 1) at hBA',
+      change (b * B 0 0 + d * B 0 1 = 0) at hBA'''',
+      have hBv : B 0 1 = - b / d * B 0 0,
+        { field_simp [hb, hd],
+          rw <-eq_neg_iff_add_eq_zero at hBA'''',
+          simp [hBA'''', mul_comm] },
+      have hd' : d = 0,
+        { field_simp [ha', ha, hb, hc, hd, hBv] at hBA',
+          rw <-hBA',
+          ring },
+      exact absurd hd' hd } }
+end
