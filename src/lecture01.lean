@@ -2,6 +2,7 @@ import data.real.basic
 import data.matrix.notation
 import linear_algebra.matrix
 import lecture01_invertible_matrices_prop
+import linear_algebra.determinant
 
 open_locale big_operators
 
@@ -156,7 +157,7 @@ begin
     exact inv_mat_nonzero _ _ (by linarith) h }
 end
 
--- A 2 x 2 matrix is invertible if the discriminant is nonzero, without determinants
+-- A 2 x 2 matrix is invertible if the "determinant" is nonzero, without definition of determinants
 example (A : MnR 2) {a b c d} (hA : A = ![![a, b], ![c, d]]) :
         a * d - b * c ≠ 0 ↔ ∃ B, mat_invertible A B :=
 begin
@@ -203,4 +204,11 @@ begin
           rw <-hBA',
           ring },
       exact absurd hd' hd } }
+end
+
+-- determinant of a 2 x 2 matrix is a * d - b * c
+example (A : MnR 2) {a b c d} (hA : A = ![![a, b], ![c, d]]) :
+        matrix.det A = a * d - b * c :=
+begin
+  simp [hA, matrix.det],
 end
