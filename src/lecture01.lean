@@ -203,12 +203,25 @@ begin
         { field_simp [ha', ha, hb, hc, hd, hBv] at hBA',
           rw <-hBA',
           ring },
-      exact absurd hd' hd } }
+      contradiction } }
 end
+
+variables (a b c d : ℝ)
 
 -- determinant of a 2 x 2 matrix is a * d - b * c
 example (A : MnR 2) {a b c d} (hA : A = ![![a, b], ![c, d]]) :
         matrix.det A = a * d - b * c :=
-begin
-  simp [hA, matrix.det],
-end
+calc
+matrix.det A = _ : by { refl }
+...          = ((1 : units ℤ) * (_ * (_ * 1))) + (((-1 : units ℤ) * (_ * (_ * 1))) + 0) : by { refl }
+...          = _ + (_ + 0) : by { refl }
+...          = a * d - b * c : by { simp [hA], refl }
+
+instance fin_inhabited {n : ℕ} : inhabited (fin (n + 1)) := ⟨0⟩
+
+@[simp] lemma fin.default_eq_zero {n : ℕ} : default (fin (n + 1)) = 0 := rfl
+
+@[simp] lemma fin.default_succ_eq_one {n : ℕ} : fin.succ (default (fin (n + 1))) = 1 := rfl
+
+lemma det_2x2 (M : matrix (fin 2) (fin 2) ℝ) : M.det = M 0 0 * M 1 1 - M 1 0 * M 0 1 :=
+by { simp [matrix.det, fin.sum_univ_succ, fin.prod_univ_succ], }

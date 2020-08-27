@@ -1,3 +1,43 @@
+import data.fin
+
+variables {n : ℕ}
+
+example {n : ℕ} (i j : fin n) : j < i → false :=
+fin.succ_rec_on i sorry sorry
+
+example (i j : fin n) (h : j < i) : true :=
+begin
+  refine fin.succ_rec_on i _ _,
+end
+
+example (i : fin (n + 2)) (h : (0 : fin (n + 2)) < i) : true :=
+begin
+  revert h,
+  refine fin.succ_rec_on i _ _,
+  { intros N h,
+    exact absurd h (lt_irrefl 0) },
+  /-
+type mismatch at application
+  absurd h (lt_irrefl 0)
+term
+  lt_irrefl 0
+has type
+  not (@has_lt.lt ?m_1 (@preorder.to_has_lt ?m_1 ?m_2) 0 0)
+but is expected to have type
+  not (@has_lt.lt (fin N.succ) (@fin.has_lt N.succ) 0 0)
+state:
+n : ℕ,
+i : fin (n + 2),
+N : ℕ,
+h : 0 < 0
+⊢ true
+-/
+
+  { sorry }
+end
+
+
+
 -- import data.real.basic
 -- import data.matrix.notation
 -- import tactic.fin_cases
@@ -78,7 +118,7 @@ def det' {R : Type*} [field R] :
 
 #check matrix.adjugate ![![a, b], ![c, d]]
 
-variables (n' m' : Type) [fintype n'] [fintype m'] 
+variables (n' m' : Type) [fintype n'] [fintype m']
 
 variable {m : ℕ}
 
@@ -112,12 +152,12 @@ end
 @[simp] lemma update_col_empty (M : matrix (fin 0) (fin 0) R) {z : fin 0} {v : fin 0 -> R} :
   update_column M z v = ![] := empty_eq _
 
-@[simp] lemma update_col_column_empty [subsingleton n'] {h : decidable_eq n'} 
+@[simp] lemma update_col_column_empty [subsingleton n'] {h : decidable_eq n'}
   (M : matrix (fin n) n' R) {z : n'} {v : fin n → R} :
   update_column M z v = λ i j, v i :=
 begin
   ext i j,
-  rw subsingleton_iff.mp (by apply_instance) z j, 
+  rw subsingleton_iff.mp (by apply_instance) z j,
   simp [subsingleton_iff.mp _ z j],
 end
 
