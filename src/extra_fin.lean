@@ -4,18 +4,18 @@ import tactic.linarith
 
 @[simp] lemma one_mod (n : ℕ) : 1 % (n + 2) = 1 := nat.mod_eq_of_lt (add_lt_add_right n.succ_pos 1)
 
-instance fin_lattice {n : ℕ} : bounded_distrib_lattice (fin (n + 1)) := {
-  top := fin.last n,
-  le_top := fin.le_last,
-  bot := 0,
-  bot_le := fin.zero_le,
-  ..distrib_lattice_of_decidable_linear_order
-  }
+-- instance fin_lattice {n : ℕ} : bounded_distrib_lattice (fin (n + 1)) := {
+--   top := fin.last n,
+--   le_top := fin.le_last,
+--   bot := 0,
+--   bot_le := fin.zero_le,
+--   ..distrib_lattice_of_decidable_linear_order
+--   }
 
-instance lattice_fins {n : ℕ} : lattice (Π n, fin (n + 1)) := @pi.lattice _ _ _
+-- instance lattice_fins {n : ℕ} : lattice (Π n, fin (n + 1)) := @pi.lattice _ _ _
 
-variables (m n : ℕ)
-#check ((⊥ : (Π n, fin (n + 1))) 2)
+-- variables (m n : ℕ)
+-- #check ((⊥ : (Π n, fin (n + 1))) 2)
 
 -- @[simp] lemma nat.pred_succ_ne_zero (n : ℕ) (h : n ≠ 0) : n.pred.succ = n :=
 -- by { cases n, exact absurd rfl h, rw nat.pred_succ }

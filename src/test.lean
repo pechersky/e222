@@ -1,39 +1,82 @@
 import data.fin
+import data.matrix.notation
+import tactic.ring_exp
 
-variables {n : ℕ}
+open_locale big_operators
 
-example {n : ℕ} (i j : fin n) : j < i → false :=
-fin.succ_rec_on i sorry sorry
+variables {n : ℕ} {R : Type*} [field R]
 
-example (i j : fin n) (h : j < i) : true :=
+variables {A : matrix (fin (n + 2)) (fin (n + 2)) R}
+
+-- example : (∑ x, ∑ y, A 0 x * (-1) ^ (x : ℕ) * A 1 (x.succ_above y) * (-1) ^ (y : ℕ)) =
+--           -(∑ x, ∑ y, A 1 x * (-1) ^ (x : ℕ) * A 0 (x.succ_above y) * (-1) ^ (y : ℕ)) :=
+-- begin
+--   simp_rw ←finset.sum_neg_distrib,
+--   ring_exp,
+--   rw fin.sum_univ_cast_succ,
+--   rw @fin.sum_univ_cast_succ _ _ (n + 1),
+--   congr,
+--   ext x,
+--   congr' 1 with y,
+--   simp,
+--   swap,
+--   ext y,
+--   simp,
+-- end
+
+lemma dite_not {α : Sort*} (P : Prop) [decidable P] (x : P → α) (y : ¬P → α) :
+  dite (¬ P) y (λ h, x (of_not_not h)) = dite P x y :=
+by { by_cases h : P; simp [h] }
+
+lemma ite_not {α : Sort*} (P : Prop) [decidable P] (x y : α) :
+  ite (¬ P) x y = ite P y x :=
+dite_not P (λ _, y) (λ _, x)
+
+lemma inv_ite {α : Type*} (P : Prop) [decidable P] {f : α → α} (h : function.involutive f) (x : α) :
+  f (ite P x (f x)) = ite (¬ P) x (f x) :=
+by rw [apply_ite f, h, ite_not]
+
+lemma test (k : R) (x y : ℕ) (hne : x ≠ y) : ite (y < x) (k : R) (-k) = - ite (x < y) k (-k) :=
 begin
-  refine fin.succ_rec_on i _ _,
+  rw inv_ite _ neg_involutive,
+  rcases (lt_trichotomy x y) with h|h|h,
+  { rw [if_neg (not_lt_of_lt h), if_neg],
+    exact (not_not.mpr h) },
+  { exact absurd h hne },
+  { rw [if_pos h, if_pos],
+    exact (not_lt_of_lt h) }
 end
 
-example (i : fin (n + 2)) (h : (0 : fin (n + 2)) < i) : true :=
-begin
-  revert h,
-  refine fin.succ_rec_on i _ _,
-  { intros N h,
-    exact absurd h (lt_irrefl 0) },
-  /-
-type mismatch at application
-  absurd h (lt_irrefl 0)
-term
-  lt_irrefl 0
-has type
-  not (@has_lt.lt ?m_1 (@preorder.to_has_lt ?m_1 ?m_2) 0 0)
-but is expected to have type
-  not (@has_lt.lt (fin N.succ) (@fin.has_lt N.succ) 0 0)
-state:
-n : ℕ,
-i : fin (n + 2),
-N : ℕ,
-h : 0 < 0
-⊢ true
--/
+#check set.finite
 
-  { sorry }
+example (x : fin (n + 1)) (y : fin n) : (-1 : R) ^ (x : ℕ) * (-1) ^ ((x.succ_above y) : ℕ)
+  = (-1) ^ ((x + y) : ℕ) * ite ((y : ℕ) < x) 1 (-1) :=
+begin
+  unfold fin.succ_above,
+  rw apply_ite coe,
+  convert test ((-1 : R) ^ ((x + y) : ℕ)) x (x.succ_above y) (fin.vne_of_ne (fin.succ_above_ne x y).symm),
+  simp [pow_add, fin.succ_above],
+  -- refine or.cases_on (fin.succ_above_lt_ge x y) _ _,
+  -- { intro h,
+  --   have h2 := h,
+  --   simp [fin.lt_iff_coe_lt_coe] at h,
+  --   rw [if_pos h, if_pos h2],
+  --   simp [pow_add] },
+  -- { intro h,
+  --   have h2 := h,
+  --   simp [fin.le_iff_coe_le_coe] at h,
+  --   rw [if_neg (not_lt_of_ge h), if_neg (not_lt_of_ge h2)],
+  --   simp [pow_add] },
+end
+
+example : (∑ x : fin (n + 2), ∑ y : fin (n + 1), A 0 (x.succ_above y)) = ∑ x, ∑ y, ite (x ≠ y) (A 0 y) 0 :=
+begin
+  congr' 1 with x,
+  symmetry,
+  rw fin.sum_univ_succ_above _ x,
+  simp,
+  congr' 1 with y,
+  rw if_neg (fin.succ_above_ne x y).symm,
 end
 
 
