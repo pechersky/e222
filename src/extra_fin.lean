@@ -4,6 +4,66 @@ import tactic.linarith
 
 @[simp] lemma one_mod (n : ℕ) : 1 % (n + 2) = 1 := nat.mod_eq_of_lt (add_lt_add_right n.succ_pos 1)
 
+-- lemma nat.not_le_pred_gt {m n : ℕ} (h : m ≤ n - 1) (H : n < m) : false :=
+-- begin
+--   have hn : n < n - 1 := lt_of_lt_of_le H h,
+--   cases n,
+--   { rw [nat.nat_zero_eq_zero, nat.zero_sub] at hn,
+--     exact absurd hn (lt_irrefl 0) },
+--   { rw [nat.succ_sub_succ_eq_sub, nat.sub_zero] at hn,
+--     exact nat.not_succ_lt_self hn },
+-- end
+
+lemma nat.not_lt_pred_ge {m n : ℕ} (h : m < n - 1) (H : n ≤ m) : false :=
+begin
+  have hn : n < n - 1 := lt_of_le_of_lt H h,
+  cases n,
+  { rw [nat.nat_zero_eq_zero, nat.zero_sub] at hn,
+    exact absurd hn (lt_irrefl 0) },
+  { rw [nat.succ_sub_succ_eq_sub, nat.sub_zero] at hn,
+    exact nat.not_succ_lt_self hn },
+end
+
+-- lemma nat.le_pred_eq_succ_le {m n : ℕ} (hpos : 0 < m) (h : n ≤ m - 1) : n + 1 ≤ m :=
+-- begin
+--   cases m,
+--   { exfalso, exact nat.lt_asymm hpos hpos },
+--   { exact nat.lt_succ_iff.mpr h }
+-- end
+
+-- lemma nat.le_pred_eq_succ_le' {m n : ℕ} (h : n - 1 ≤ m) : n ≤ m + 1 :=
+-- begin
+--   cases m,
+--   { exact nat.le_add_of_sub_le_right h },
+--   { exact nat.le_add_of_sub_le_right h }
+-- end
+
+lemma nat.sub_add_one {n : ℕ} (hpos : 0 < n) : n - 1 + 1 = n :=
+begin
+  cases n,
+  { exact absurd hpos (lt_irrefl 0) },
+  simp only [nat.succ_sub_succ_eq_sub, nat.sub_zero],
+end
+
+-- lemma fin.cast_succ_lt_iff (x y : fin n) : x.cast_succ < y.cast_succ ↔ x < y :=
+-- begin
+--   rw [fin.lt_iff_coe_lt_coe, fin.lt_iff_coe_lt_coe],
+--   exact iff.rfl
+-- end
+
+-- lemma fin.cast_succ_le_iff (x y : fin n) : x.cast_succ ≤ y.cast_succ ↔ x ≤ y :=
+-- begin
+--   rw [fin.le_iff_coe_le_coe, fin.le_iff_coe_le_coe],
+--   exact iff.rfl
+-- end
+
+-- lemma fin.le_succ_above (p : fin (n + 1)) (i : fin n) : i.cast_succ ≤ p.succ_above i :=
+-- begin
+--   cases fin.succ_above_lt_ge p i,
+--   { rw fin.succ_above_below _ _ h },
+--   { rw fin.succ_above_above _ _ h,
+--     exact le_of_lt (fin.cast_succ_lt_succ i) }
+-- end
 -- instance fin_lattice {n : ℕ} : bounded_distrib_lattice (fin (n + 1)) := {
 --   top := fin.last n,
 --   le_top := fin.le_last,
