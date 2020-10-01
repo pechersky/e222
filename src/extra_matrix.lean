@@ -1,8 +1,10 @@
 import data.matrix.basic
+import .extra_fin
 
 open_locale matrix
 
 variables {n m : ℕ}
+variables {R : Type*}
 
 open matrix
 
@@ -10,7 +12,7 @@ namespace matrix
 
 section dot_product
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 variables (A : matrix (fin n) (fin m) R)
 
 @[simp] lemma one_dot_product_row (i j) :
@@ -41,7 +43,7 @@ end dot_product
 
 section swap
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 variables (A : matrix (fin n) (fin m) R)
 
 def swap_row (i j) : matrix (fin n) (fin m) R :=
@@ -148,7 +150,7 @@ end swap
 
 section swap_matrix
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 variables (A : matrix (fin (n + 2)) (fin (m + 2)) R)
 
 def swap_row_matrix (i j) : matrix (fin (n + 2)) (fin (n + 2)) R :=
@@ -183,7 +185,7 @@ end swap_matrix
 
 section scale
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 variables (A : matrix (fin n) (fin m) R)
 
 def scale_row (i) (c : R) : matrix (fin n) (fin m) R := update_row A i (λ j, c * A i j)
@@ -200,7 +202,6 @@ end scale
 
 section scale_matrix
 
-variables {R : Type*}
 variables (A : matrix (fin n) (fin m) R)
 
 def scale_matrix [semiring R] (i) (c : R) : matrix (fin n) (fin n) R := diagonal (λ k, ite (i = k) c 1)
@@ -228,7 +229,7 @@ end scale_matrix
 
 section add_row_col
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 variables (A : matrix (fin n) (fin m) R)
 
 def add_row (i j) : matrix (fin n) (fin m) R :=
@@ -247,7 +248,7 @@ end add_row_col
 
 section submatrix
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 variables {n' m' : ℕ}
 
 def submatrix (A : matrix (fin n) (fin m) R) (hn : n' ≤ n) (hm : m' ≤ m) : matrix (fin n') (fin m') R :=
@@ -257,7 +258,7 @@ end submatrix
 
 section add_row_col_matrix
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 variables (A : matrix (fin (n + 2)) (fin (n + 2)) R)
 
 def add_row_matrix (i j) : matrix (fin n) (fin m) R :=
@@ -308,7 +309,7 @@ end add_row_col_matrix
 
 section echelon
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 
 def row_echelon (A : matrix (fin n) (fin m) R) := ∀ i : fin n, ∀ j : fin m, j.val < i.val → A i j = 0
 
@@ -320,31 +321,202 @@ end echelon
 
 section drop
 
-variables {R : Type*} [semiring R]
+variables [semiring R]
 variables (A : matrix (fin (n + 2)) (fin (m + 2)) R)
 
 def drop (i : fin (n + 2)) (j : fin (m + 2)) : matrix (fin (n + 1)) (fin (m + 1)) R := minor A (i.succ_above) (j.succ_above)
 
-@[simp] lemma drop_def (i j) : drop A i j = minor A (i.succ_above) (j.succ_above) := rfl
+lemma drop_def (i j) : drop A i j = minor A (i.succ_above) (j.succ_above) := rfl
 
-@[simp] lemma drop_zero_column (i) : drop A i 0 = minor A (i.succ_above) (fin.succ) :=
-by { ext, simp [minor] }
+lemma drop_zero_column (i) : drop A i 0 = minor A (i.succ_above) (fin.succ) :=
+by { ext, simp [drop_def, minor] }
 
-@[simp] lemma drop_zero_row (j) : drop A 0 j = minor A (fin.succ) (j.succ_above) :=
-by { ext, simp [minor] }
+lemma drop_zero_row (j) : drop A 0 j = minor A (fin.succ) (j.succ_above) :=
+by { ext, simp [drop_def, minor] }
 
-@[simp] lemma drop_zero_row_column : drop A 0 0 = minor A fin.succ fin.succ :=
-by { ext, simp [minor] }
+lemma drop_zero_row_column : drop A 0 0 = minor A fin.succ fin.succ :=
+by { ext, simp [drop_def, minor] }
 
-@[simp] lemma drop_last_column (i) : drop A i (fin.last _) = minor A (i.succ_above) (fin.cast_succ) :=
-by { ext, simp [minor] }
+lemma drop_last_column (i) : drop A i (fin.last _) = minor A (i.succ_above) (fin.cast_succ) :=
+by { ext, simp [drop_def, minor] }
 
-@[simp] lemma drop_last_row (j) : drop A (fin.last _) j = minor A (fin.cast_succ) (j.succ_above) :=
-by { ext, simp [minor] }
+lemma drop_last_row (j) : drop A (fin.last _) j = minor A (fin.cast_succ) (j.succ_above) :=
+by { ext, simp [drop_def, minor] }
 
-@[simp] lemma drop_last_row_column : drop A (fin.last _) (fin.last _) = minor A fin.cast_succ fin.cast_succ :=
-by { ext, simp [minor] }
+lemma drop_last_row_column : drop A (fin.last _) (fin.last _) = minor A fin.cast_succ fin.cast_succ :=
+by { ext, simp [drop_def, minor] }
 
 end drop
+
+section drop_drop
+
+variables [semiring R]
+variables (A : matrix (fin (n + 3)) (fin (m + 3)) R)
+
+lemma drop_drop_comm (i i' : fin (n + 3)) (j j') (h : i ≠ i') :
+  drop (drop A i' j) (i'.pred_above i h) j' = drop (drop A i j) (i.pred_above i' h.symm) j' :=
+by { simp only [drop_def, minor], ext, rw fin.succ_above_succ_above_swap }
+
+lemma drop_drop_comm' (i i') (j j' : fin (m + 3)) (h : j ≠ j') :
+  drop (drop A i j') i' (j'.pred_above j h) = drop (drop A i j) i' (j.pred_above j' h.symm) :=
+by { simp only [drop_def, minor], ext, rw fin.succ_above_succ_above_swap }
+
+lemma drop_drop_adjacent (i : fin (n + 2)) (j j') :
+  drop (drop A i.succ j) i j' = drop (drop A i.cast_succ j) i j' :=
+begin
+  ext x y,
+  simp only [drop_def, minor],
+  cases fin.succ_above_lt_ge i x,
+  { rw [fin.succ_above_below _ _ h, fin.succ_above_below, fin.succ_above_below _ x.cast_succ],
+    { exact h },
+    { refine lt_trans _ (fin.cast_succ_lt_succ i),
+      exact h } },
+  { rw [fin.succ_above_above _ _ h, fin.succ_above_above _ x.succ, fin.succ_above_above _ x.succ],
+    { rw [fin.cast_succ_le_cast_succ_iff],
+      exact le_trans h (le_of_lt (fin.cast_succ_lt_succ _)) },
+    { rw [fin.cast_succ_fin_succ, fin.succ_le_succ_iff],
+      exact h } }
+end
+
+lemma drop_drop_01 (j j') : drop (drop A 1 j) 0 j' = drop (drop A 0 j) 0 j' :=
+drop_drop_adjacent A 0 j j'
+
+lemma drop_drop_0i (i : fin (n + 2)) (j j') :
+  drop (drop A i.succ j) 0 j' = drop (drop A 0 j) i j'  :=
+begin
+  ext x y,
+  simp only [drop_def, minor, fin.succ_above_zero],
+  cases fin.succ_above_lt_ge i x,
+  { rw [fin.succ_above_below _ _ h, fin.succ_above_below _ x.succ, fin.cast_succ_fin_succ],
+    { rw [fin.cast_succ_fin_succ, fin.succ_lt_succ_iff],
+      exact h } },
+  { rw [fin.succ_above_above _ _ h, fin.succ_above_above _ x.succ],
+    { rw [fin.cast_succ_fin_succ, fin.succ_le_succ_iff],
+      exact h } }
+end
+
+end drop_drop
+
+section drop_swap
+
+variables [semiring R]
+variables (A : matrix (fin (n + 2)) (fin (m + 2)) R)
+
+@[simp] lemma drop_swap_adjacent (i : fin (n + 1)) (j) :
+  drop (swap_row A i.cast_succ i.succ) i.succ j = drop A i.cast_succ j :=
+begin
+  ext x y,
+  simp only [drop_def, minor],
+  rcases lt_trichotomy x i with h|rfl|h,
+  { rw [fin.succ_above_below _ x, fin.succ_above_below _ x, swap_row_ne_apply],
+    { exact ne_of_lt h },
+    { exact ne_of_lt (lt_trans (fin.cast_succ_lt_cast_succ_iff.mpr h) (fin.cast_succ_lt_succ _)) },
+    { exact h },
+    { exact (lt_trans (fin.cast_succ_lt_cast_succ_iff.mpr h) (fin.cast_succ_lt_succ _)) } },
+  { rw [fin.succ_above_below _ x (fin.cast_succ_lt_succ _),
+        fin.succ_above_above _ x (le_refl _), swap_row_swap_apply] },
+  { rw [fin.succ_above_above _ x, fin.succ_above_above _ x, swap_row_ne_apply],
+    { exact ne_of_gt (lt_trans (fin.cast_succ_lt_cast_succ_iff.mpr h) (fin.cast_succ_lt_succ _)) },
+    { exact ne_of_gt (fin.succ_lt_succ_iff.mpr h) },
+    { exact le_of_lt h },
+    { rw fin.succ_le_iff_cast_succ_lt,
+      exact h } },
+end
+
+@[simp] lemma drop_swap_01 (j) : drop (swap_row A 0 1) 1 j = drop A 0 j :=
+drop_swap_adjacent A 0 j
+
+@[simp] lemma drop_swap_adjacent' (i : fin (n + 1)) (j) :
+  drop (swap_row A i.cast_succ i.succ) i.cast_succ j = drop A i.succ j :=
+begin
+  ext x y,
+  simp only [drop_def, minor],
+  rcases lt_trichotomy x i with h|rfl|h,
+  { rw [fin.succ_above_below _ x, fin.succ_above_below _ x, swap_row_ne_apply],
+    { exact ne_of_lt h },
+    { exact ne_of_lt (lt_trans (fin.cast_succ_lt_cast_succ_iff.mpr h) (fin.cast_succ_lt_succ _)) },
+    { exact (lt_trans (fin.cast_succ_lt_cast_succ_iff.mpr h) (fin.cast_succ_lt_succ _)) },
+    { exact h } },
+  { rw [fin.succ_above_below _ x (fin.cast_succ_lt_succ _),
+        fin.succ_above_above _ x (le_refl _), swap_row_apply] },
+  { rw [fin.succ_above_above _ x, fin.succ_above_above _ x, swap_row_ne_apply],
+    { exact ne_of_gt (lt_trans (fin.cast_succ_lt_cast_succ_iff.mpr h) (fin.cast_succ_lt_succ _)) },
+    { exact ne_of_gt (fin.succ_lt_succ_iff.mpr h) },
+    { rw fin.succ_le_iff_cast_succ_lt,
+      exact h },
+    { exact le_of_lt h } },
+end
+
+@[simp] lemma drop_swap_01' (j) : drop (swap_row A 0 1) 0 j = drop A 1 j :=
+drop_swap_adjacent' A 0 j
+
+lemma drop_swap_zero_comm {i j : fin (n + 2)} (h : i ≠ j) (ipos : 0 < i) (jpos : 0 < j) (col) :
+    (A.swap_row i j).drop 0 col = (A.drop 0 col).swap_row (i.pred (ne_of_gt ipos)) (j.pred (ne_of_gt jpos)) :=
+begin
+  ext x y,
+  by_cases hxi : x = i.pred (ne_of_gt ipos),
+  { simp [hxi, drop_zero_row, minor], },
+  by_cases hxj : x = j.pred (ne_of_gt jpos),
+  { simp [hxj, drop_zero_row, minor] },
+  { rw swap_row_ne_apply _ _ _ _ _ hxi hxj,
+    rw fin.pred_succ_iff at hxi hxj,
+    simp only [minor, drop_zero_row, swap_row_ne_apply, hxi, hxj, ne.def, not_false_iff] }
+end
+
+end drop_swap
+
+section swap_swap
+
+variables [semiring R]
+variables (A : matrix (fin (n + 2)) (fin (m + 2)) R)
+
+lemma swap_contract_01 {i : fin (n + 2)} (h : 1 < i) :
+  ((A.swap_row 0 1).swap_row 1 i).swap_row 0 1 = A.swap_row 0 i :=
+begin
+  have hpos : i ≠ 0 := ne_of_gt (lt_of_le_of_lt (fin.zero_le 1) h),
+  rw swap_row_thrice A 0 1 i fin.zero_ne_one (ne_of_lt h) hpos.symm
+end
+
+end swap_swap
+
+section induction
+
+variables [semiring R]
+variables (A : matrix (fin (n + 2)) (fin (m + 2)) R)
+
+@[elab_as_eliminator] protected lemma elem_matrix.induction_on
+  {C : Π {n}, matrix (fin n) (fin n) R → fin n → Prop}
+  (A : matrix (fin (n + 2)) (fin (n + 2)) R) (i : fin (n + 2))
+  (h2 : ∀ (A' : matrix (fin 2) (fin 2) R), ∀ x, C A' x)
+  (hn0 : C A 0)
+  (hn0e : ∀ n, ∀ (A'' : matrix (fin (n + 2)) (fin (n + 2)) R) (A' : matrix (fin (n + 1)) (fin (n + 1)) R), C A'' 0 → C A' 0)
+  (hns : ∀ x : fin (n + 1), ∀ A'', C A'' x → C A x.cast_succ → C A x.succ) :
+  C A i :=
+begin
+  induction n with n hn,
+  { exact h2 A i },
+  obtain ⟨i, hi⟩ := i,
+  induction i with i IH,
+  { simp only [fin.mk_zero],
+    exact hn0 },
+  { set i' : fin (n + 2) := ⟨i, nat.lt_of_succ_lt_succ hi⟩ with hi',
+    have hib' : (⟨i.succ, hi⟩ : fin (n + 3)) = i'.succ := rfl,
+    rw hib',
+    have hin : i < n.succ + 2 := lt_trans (nat.lt_succ_self i) hi,
+    specialize IH hin,
+    have : (⟨i, hin⟩ : fin (n + 3)) = i'.cast_succ := rfl,
+    simp_rw this at IH,
+    apply hns i' _ _ IH,
+    { apply hn,
+      apply hn0e,
+      exact hn0,
+      { intros j A'' A' pA'' pA',
+      },
+      },
+    {  } },
+end
+
+
+end induction
 
 end matrix

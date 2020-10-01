@@ -10,6 +10,7 @@ import tactic.wlog
 import .extra_fin
 import .extra_matrix
 import linear_algebra.determinant
+import data.rat.cast
 
 open_locale big_operators matrix
 
@@ -33,7 +34,7 @@ def det' {R : Type*} [field R] :
 
 @[simp] lemma det_one_eq_elem (A : matrix (fin 1) (fin 1) R) : det' A = A 0 0 := rfl
 
-lemma det_laplace_def : det' A = ∑ j, (A 0 j * (-1 : R) ^ (j.val) * det' (drop A 0 j)) := rfl
+lemma det_laplace_def : det' A = ∑ j, (A 0 j * (-1 : R) ^ (j : ℕ) * det' (drop A 0 j)) := rfl
 
 instance fin_inhabited {n : ℕ} : inhabited (fin (n + 1)) := ⟨0⟩
 
@@ -41,136 +42,49 @@ instance fin_inhabited {n : ℕ} : inhabited (fin (n + 1)) := ⟨0⟩
 
 @[simp] lemma fin.default_succ_eq_one {n : ℕ} : fin.succ (default (fin (n + 1))) = 1 := rfl
 
-lemma det_swap_eq_neg_det_dim2 (A : matrix (fin 2) (fin 2) R) (i j) (h : i ≠ j) : det' (swap_row A j i) = - det' A :=
+lemma det_swap_eq_neg_det_dim2 (A : matrix (fin 2) (fin 2) R) (i j) (h : i ≠ j) : det' (swap_row A i j) = - det' A :=
 begin
   wlog hl : i ≤ j,
   fin_cases i;
   fin_cases j,
   any_goals { contradiction },
-  { simp [det_laplace_def, minor, fin.sum_univ_succ, h.symm, fin.succ_above_below, fin.one_pos],
+  { simp [det_laplace_def, fin.sum_univ_succ, fin.succ_above_below, fin.one_pos, drop_def, minor],
     ring },
   { exact absurd fin.one_pos (not_lt_of_le hl) },
   { rw [←this h.symm, swap_row_symmetric] }
 end
 
-lemma fin.succ_above_succ_above_swap (x y : fin (n + 2)) (h : y ≠ x) (j : fin n) :
-  x.succ_above ((x.pred_above y h).succ_above j) =
-  y.succ_above ((y.pred_above x (ne.symm h)).succ_above j) :=
-begin
-  wlog H : y < x using [x y],
-  { rcases lt_trichotomy x y with H|rfl|H,
-    { exact or.inr H },
-    { contradiction },
-    { exact or.inl H } },
-  unfold fin.pred_above,
-  rw [dif_pos H, dif_neg (not_lt_of_lt H)],
-  have H' := fin.lt_iff_coe_lt_coe.mp H,
-  have posx : 0 < x.val := lt_of_le_of_lt (fin.zero_le y) ‹y < x›,
-  unfold fin.succ_above,
-  all_goals { simp_rw [fin.lt_iff_coe_lt_coe] at * },
-  split_ifs,
-  any_goals { refl <|> rw fin.cast_succ_fin_succ },
-  all_goals {
-    simp only [fin.val_eq_coe, fin.coe_cast_lt,
-               fin.coe_succ, fin.coe_cast_succ, fin.coe_pred,
-               not_lt, ne.def, fin.cast_succ_inj] at * },
-  { have hj : (x : ℕ) - 1 = j :=
-      le_antisymm ‹(x : ℕ) - 1 ≤ j› (nat.le_pred_of_lt ‹(j : ℕ) < x›),
-    rw ←hj at *,
-    rw nat.sub_add_one posx at *,
-    exact absurd ‹(y : ℕ) < x› (not_lt_of_lt ‹(x : ℕ) < y›) },
-  { have hj : (x : ℕ) - 1 = j :=
-      le_antisymm ‹(x : ℕ) - 1 ≤ j› (nat.le_pred_of_lt ‹(j : ℕ) < x›),
-    rw ←hj at *,
-    rw nat.sub_add_one posx at *,
-    have hy : y = x :=
-      le_antisymm ‹(y : ℕ) ≤ x› (nat.le_of_pred_lt ‹(x : ℕ) - 1 < y›),
-    exact absurd hy h },
-  { exact absurd ‹(x : ℕ) ≤ j› (nat.not_lt_pred_ge ‹(j : ℕ) < x - 1›) },
-  { have hy : (y : ℕ) = j + 1 :=
-      le_antisymm ‹(y : ℕ) ≤ j + 1› ‹(j : ℕ) < y›,
-    have : (j : ℕ) < x,
-      { refine lt_trans (nat.lt_succ_self j) _,
-        convert fin.lt_iff_coe_lt_coe.mp H,
-        rw hy },
-    exact absurd ‹(j : ℕ) < x› (not_lt_of_ge ‹(x : ℕ) ≤ j›) },
-  { have : (x : ℕ) ≤ j + 1 :=
-      nat.le_add_of_sub_le_right ‹(x : ℕ) - 1 ≤ j›,
-    exact absurd ‹(j : ℕ) + 1 < x› (not_lt_of_ge ‹(x : ℕ) ≤ j + 1›) },
-  { have : (j : ℕ) + 1 < x :=
-      nat.add_lt_of_lt_sub_right ‹(j : ℕ) < x - 1›,
-    exact absurd ‹(j : ℕ) + 1 < x› (not_lt_of_ge ‹(x : ℕ) ≤ j + 1›) },
-  { have : (j : ℕ) < y :=
-      lt_trans (nat.lt_succ_self j) ‹(j : ℕ) + 1 < y›,
-    exact absurd ‹(j : ℕ) < y› (not_lt_of_ge ‹(y : ℕ) ≤ j›) },
-end
-
-lemma det_swap_01_sum_aux (A : matrix (fin (n + 2)) (fin (n + 2)) R) :
+lemma det_swap_01_sum_aux (A : matrix (fin (n + 3)) (fin (n + 3)) R) :
   (∑ x, (∑ y, -A 0 x * (-1) ^ (x : ℕ) * A 1 (x.succ_above y) * (-1) ^ (y : ℕ) *
-    det' (λ (i j : fin n), A i.succ.succ (x.succ_above (y.succ_above j))))) =
+    det' ((A.drop 0 x).drop 0 y))) =
   ∑ x, (∑ y, A 1 x * (-1) ^ (x : ℕ) * A 0 (x.succ_above y) * (-1) ^ (y : ℕ) *
-    det' (λ (i j : fin n), A i.succ.succ (x.succ_above (y.succ_above j)))) :=
+    det' ((A.drop 0 x).drop 0 y)) :=
 begin
-  have lhs :
-    (∑ x : fin (n + 2), ∑ y : fin (n + 1),
-      (A 0 x * (A 1 (x.succ_above y) * (det' (λ (i j : fin n),
-        A i.succ.succ (x.succ_above (y.succ_above j))) *
-          ((-1) ^ (x : ℕ) * -(-1) ^ (y : ℕ))))))
-    = ∑ x : fin (n + 2), ∑ y : fin (n + 2), dite (x = y) (λ _, 0)
-      (λ h, (A 0 x * (A 1 y * det' (λ (i j : fin n),
-        A i.succ.succ (x.succ_above ((x.pred_above y (ne.symm h)).succ_above j))) *
-          -((-1 : R) ^ (x : ℕ) * (-1) ^ (y : ℕ) * ite (y < x) 1 (-1))))),
-    { congr' 1 with x,
-      rw [fin.sum_univ_succ_above _ x, dif_pos rfl, zero_add],
-      congr' 1 with y,
-      simp_rw [dif_neg (fin.succ_above_ne x y).symm,
-               fin.succ_above_lt_iff, fin.pred_above_succ_above],
-      split_ifs with H H,
-      { rw [fin.succ_above_below _ _ H],
-        ring_exp },
-      { rw [fin.succ_above_above _ _ (le_of_not_lt H), fin.coe_succ],
-        ring_exp } },
-  have rhs :
-    (∑ x : fin (n + 2), ∑ y : fin (n + 1),
-      (A 1 x * (A 0 (x.succ_above y) * (det' (λ (i j : fin n),
-        A i.succ.succ (x.succ_above (y.succ_above j))) *
-          ((-1 : R) ^ (x : ℕ) * (-1) ^ (y : ℕ))))))
-    = ∑ x : fin (n + 2), ∑ y : fin (n + 2), dite (x = y) (λ _, 0)
-      (λ h, (A 1 x * (A 0 y * det' (λ (i j : fin n),
-        A i.succ.succ (x.succ_above ((x.pred_above y (ne.symm h)).succ_above j)))
-        * ((-1 : R) ^ (x : ℕ) * (-1) ^ (y : ℕ) * ite (y < x) 1 (-1))))),
-    { congr' 1 with x,
-      rw [fin.sum_univ_succ_above _ x, dif_pos rfl, zero_add],
-      congr' 1 with y,
-      simp_rw [dif_neg (fin.succ_above_ne x y).symm,
-               fin.succ_above_lt_iff, fin.pred_above_succ_above],
-      split_ifs with H H,
-      { rw [fin.succ_above_below _ _ H],
-        ring_exp },
-      { rw [fin.succ_above_above _ _ (le_of_not_lt H), fin.coe_succ],
-        ring_exp } },
-  ring_exp,
-  rw [lhs, rhs, finset.sum_comm],
-  clear lhs rhs,
+  rw [fin.sum_collate, fin.sum_collate, finset.sum_comm],
+  simp_rw fin.succ_above_descend,
   congr' 1 with x,
   congr' 1 with y,
-  rcases lt_trichotomy x y with h|h|h,
-  { rw [dif_neg (ne_of_lt h)],
-    rw [dif_neg (ne_of_gt h), if_neg (not_lt_of_lt h), if_pos h],
-    simp [fin.pred_above_succ_above, fin.succ_above_succ_above_swap x y (ne_of_gt h)],
+  rcases lt_trichotomy x y with h|rfl|h,
+  { have : 0 < (y : ℕ),
+      { exact lt_of_le_of_lt (nat.zero_le _) h },
+    rw [dif_neg (ne_of_lt h), dif_neg (ne_of_gt h), drop_drop_comm',
+        fin.pred_above, fin.pred_above, dif_pos h, dif_neg (not_lt_of_lt h),
+        fin.coe_pred, ring.pow_sub this, fin.coe_cast_lt],
     ring_exp },
-  { rw [dif_pos h, dif_pos h.symm] },
-  { rw [dif_neg (ne_of_lt h)],
-    rw [dif_neg (ne_of_gt h), if_neg (not_lt_of_lt h), if_pos h],
-    simp [fin.pred_above_succ_above, fin.succ_above_succ_above_swap y x (ne_of_gt h)],
-    ring_exp }
+  { simp only [dif_pos] },
+  { have : 0 < (x : ℕ),
+      { exact lt_of_le_of_lt (nat.zero_le _) h },
+    rw [dif_neg (ne_of_lt h), dif_neg (ne_of_gt h), drop_drop_comm',
+        fin.pred_above, fin.pred_above, dif_pos h, dif_neg (not_lt_of_lt h),
+        fin.coe_pred, ring.pow_sub this, fin.coe_cast_lt],
+    ring_exp },
 end
 
 lemma det_swap01_eq_neg_det (A : matrix (fin (n + 2)) (fin (n + 2)) R) :
   det' (swap_row A 0 1) = - det' A :=
 begin
   induction n with n hn,
-  { exact det_swap_eq_neg_det_dim2 A 1 0 (fin.zero_ne_one.symm) },
+  { exact det_swap_eq_neg_det_dim2 A 0 1 fin.zero_ne_one },
   have s1 : ∀ ix : fin (n + 1), A.swap_row 0 1 ix.succ.succ = A ix.succ.succ,
     { intro ix,
       ext col,
@@ -178,14 +92,12 @@ begin
       { exact ne_of_gt (fin.succ_pos _) },
       { exact fin.succ_succ_ne_one _ } },
   symmetry,
+  simp only [det_laplace_def, finset.mul_sum, ←finset.sum_neg_distrib],
+  simp_rw [drop_swap_01', drop_drop_01],
   convert det_swap_01_sum_aux A;
-  { simp [det_laplace_def, minor, s1, finset.mul_sum],
+  { simp [det_laplace_def, minor, s1, finset.mul_sum, drop_zero_row],
     ring_exp }
 end
-
-lemma fin.pred_succ_iff (x : fin (n + 1)) (y : fin n) (hx : x ≠ 0) :
-  y = x.pred hx ↔ y.succ = x :=
-⟨λ h, h.symm ▸ (fin.succ_pred x hx), λ h, by simp_rw [←h, fin.pred_succ] ⟩
 
 lemma det_swap_ij_pos_eq_neg_det (A : matrix (fin (n + 2)) (fin (n + 2)) R)
   (i j : fin (n + 2)) (ipos : 0 < i) (h : i < j) :
@@ -200,37 +112,21 @@ begin
   set i' := i.pred (ne_of_gt ipos) with hi,
   set j' := j.pred (ne_of_gt (lt_trans ipos h)) with hj,
   have h' : i' < j',
-    { simp only [fin.lt_iff_coe_lt_coe, fin.coe_pred],
-      exact nat.pred_lt_pred (ne_of_gt ipos) h, },
+    { rw [←fin.succ_lt_succ_iff, hi, hj],
+      simpa only [fin.succ_pred] using h },
   have jpos' : 0 < j' := lt_of_le_of_lt (fin.zero_le i') h',
-  have drop_swap_comm : ∀ col,
-    (A.swap_row i j).drop 0 col = (A.drop 0 col).swap_row i' j',
-    { intro col,
-      ext x y,
-      by_cases hxi : x = i',
-      { simp [hxi, minor] },
-      by_cases hxj : x = j',
-      { simp [hxj, minor] },
-      { rw swap_row_ne_apply _ _ _ _ _ hxi hxj,
-        rw fin.pred_succ_iff at hxi hxj,
-        simp only [minor, drop_zero_row, swap_row_ne_apply,
-                    hxi, hxj, ne.def, not_false_iff] } },
-  have swap_expand : ∀ {M : matrix (fin (n + 2)) (fin (n + 2)) R} row,
-    1 < row → M.swap_row 0 row =
-      ((M.swap_row 0 1).swap_row 1 row).swap_row 0 1,
-    { intros M row H,
-      have hpos : row ≠ 0 := ne_of_gt (lt_of_le_of_lt (fin.zero_le 1) H),
-      rw swap_row_thrice M 0 1 row fin.zero_ne_one (ne_of_lt H) hpos.symm },
   rw [det_laplace_def, det_laplace_def],
   simp_rw [←finset.sum_neg_distrib, swap_row_ne_apply _ _ _ _ _
-    (ne_of_lt ipos) (ne_of_lt (lt_trans ipos h)), drop_swap_comm],
+    (ne_of_lt ipos) (ne_of_lt (lt_trans ipos h)),
+    drop_swap_zero_comm _ (ne_of_lt h) ipos (lt_trans ipos h)],
   cases eq_or_lt_of_le (fin.zero_le i') with H H,
-  { rw ←H,
+  { rw [←hi, ←H],
     by_cases Hj : (j' = 1),
-    { simp_rw [Hj, det_swap01_eq_neg_det],
+    { simp_rw [←hj, Hj, det_swap01_eq_neg_det],
       ring_exp, },
     { replace Hj : 1 < j' := lt_of_le_of_ne jpos' (ne.symm Hj),
-      simp_rw [swap_expand j' Hj, det_swap01_eq_neg_det,
+      simp_rw [←swap_contract_01 _ Hj, det_swap01_eq_neg_det],
+      simp_rw [
         hn _ _ _ (lt_of_le_of_ne (fin.zero_le 1) (fin.zero_ne_one)) Hj,
         det_swap01_eq_neg_det],
       ring } },
@@ -303,74 +199,178 @@ begin
   { simp only [det'', dif_pos, fin.val_eq_coe, det_one_eq_elem] },
   { have one_pos : (0 : fin 1).cast_succ < 1 := lt_of_le_of_ne (fin.zero_le 1) fin.zero_ne_one,
     simp [det'', minor, fin.zero_ne_one.symm,
-          fin.sum_univ_succ, fin.succ_above_below _ _ one_pos],
+          fin.sum_univ_succ, fin.succ_above_below _ _ one_pos, drop_zero_row],
     ring }
 end
 
-lemma drop_swap_01 (A : matrix (fin (n + 2)) (fin (n + 2)) R) (j) :
-  A.drop 0 j = (A.swap_row 0 1).drop 1 j :=
-begin
-  ext x y,
-  { have hle : ∀ (i : fin (n + 1)), 1 ≤ i.succ,
-      { intro i,
-        rcases eq_or_lt_of_le (fin.zero_le i) with rfl|H,
-        { rw fin.succ_zero_eq_one },
-        { rw ←fin.succ_lt_succ_iff at H,
-          exact le_of_lt H } },
-    have hswap : ∀ (i : fin n) jx, A.swap_row 0 1 i.succ.succ jx = A i.succ.succ jx,
-      { intros ix jx,
-        rw swap_row_ne_apply,
-        { exact (ne_of_gt (fin.succ_pos ix.succ)) },
-        { exact (ne_of_gt (fin.one_lt_succ_succ ix)) } },
-    have habove : ∀ (ix : fin (n + 1)), fin.succ_above 1 ix.succ = ix.succ.succ,
-      { intros ix,
-        rw fin.succ_above_above,
-        rw fin.le_iff_coe_le_coe,
-        exact hle ix },
-    rcases eq_or_lt_of_le (fin.zero_le x) with rfl|H,
-    { simp [det_laplace_def, minor, hswap, habove, hle,
-          fin.succ_above_below, fin.one_pos] },
-    { cases fin.succ_above_lt_ge 1 x with H' H',
-      { rw ←fin.succ_lt_succ_iff at H,
-        rw fin.lt_iff_coe_lt_coe at H H',
-        exfalso,
-        simp at H H',
-        cases x,
-        sorry,
-      },
-      have : x.succ ≠ 1,
-        { intros hne,
-          rw ←hne at H',
-          exact absurd H' (not_le_of_lt (fin.cast_succ_lt_succ _)) },
-      simp [det_laplace_def, minor, hswap, habove, hle,
-          fin.succ_above_above, fin.one_pos, H', H, this, swap_row_ne_apply, ne_of_gt (fin.succ_pos x)], },
-          },
-end
+lemma drop_swap_det_01 (A : matrix (fin (n + 2)) (fin (n + 2)) R) (jx : fin (n + 2)) :
+  det' ((A.swap_row 0 1).drop 0 jx) = det' (A.drop 1 jx) :=
+by rw drop_swap_01' A jx
 
-lemma drop_swap_det01 (A : matrix (fin (n + 2)) (fin (n + 2)) R) (j) :
-  det' (A.drop 1 j) = det' ((A.swap_row 0 1).drop 0 j) :=
+lemma drop_swap_det_0i (A : matrix (fin (n + 2)) (fin (n + 2)) R) (i jx : fin (n + 2))
+  (ipos : 0 < i) :
+  det' ((A.swap_row 0 i).drop 0 jx) = (-1) ^ ((i : ℕ) + 1) * det' (A.drop i jx) :=
 begin
   induction n with n hn,
-  { simp [minor, fin.succ_above_below, fin.one_pos] },
-  {
-    have hle : ∀ (i : fin (n + 1)), 1 ≤ i.succ,
-      { intro i,
-        rcases eq_or_lt_of_le (fin.zero_le i) with rfl|H,
-        { rw fin.succ_zero_eq_one },
-        { rw ←fin.succ_lt_succ_iff at H,
-          exact le_of_lt H } },
-    have hswap : ∀ (i : fin (n + 1)) jx, A.swap_row 0 1 i.succ.succ jx = A i.succ.succ jx,
-      { intros ix jx,
-        rw swap_row_ne_apply,
-        { exact (ne_of_gt (fin.succ_pos ix.succ)) },
-        { exact (ne_of_gt (fin.one_lt_succ_succ ix)) } },
-    have habove : ∀ (ix : fin (n + 1)), fin.succ_above 1 ix.succ = ix.succ.succ,
-      { intros ix,
-        rw fin.succ_above_above,
-        rw fin.le_iff_coe_le_coe,
-        exact hle ix },
-    simp [det_laplace_def, minor, hswap, habove, hle,
-          fin.succ_above_below, fin.one_pos] },
+  { fin_cases i,
+    { exact absurd ipos (lt_irrefl 0) },
+    { convert drop_swap_det_01 A jx,
+      simp only [one_pow, one_mul, fin.coe_one, neg_square] } },
+  obtain ⟨i, hi⟩ := i,
+  induction i with i IH,
+  { exact absurd ipos (lt_irrefl 0) },
+  set i' := fin.pred ⟨i.succ, hi⟩ (ne_of_gt ipos) with hi',
+  rw fin.pred_succ_iff at hi',
+  simp_rw ←hi',
+  rw [det_laplace_def, det_laplace_def],
+  rw [finset.mul_sum],
+  congr' 1,
+  ext x,
+  rw mul_comm ((-1 : R) ^ _),
+  rw mul_assoc ((A.drop _ _ _ _) * _),
+  congr' 1,
+  { simp [drop_def, minor, ←hi'], },
+end
+
+lemma drop_swap_det_ij (A : matrix (fin (n + 2)) (fin (n + 2)) R) (i j jx : fin (n + 2))
+  (ipos : 0 < i) (h : i < j) :
+  det' ((A.swap_row i j).drop i jx) = (-1) ^ ((i : ℕ) + j + 1) * det' (A.drop j jx) :=
+begin
+  have jpos : 0 < j := lt_trans ipos h,
+  induction n with n hn,
+  { fin_cases i,
+    { exact absurd ipos (lt_irrefl 0) },
+    fin_cases j,
+    { exact absurd jpos (lt_irrefl 0) },
+    { exact absurd h (lt_irrefl 1) } },
+  rcases n with _|n,
+  { fin_cases i,
+    { exact absurd ipos (lt_irrefl 0) },
+    { fin_cases j,
+      { exact absurd jpos (lt_irrefl 0) },
+      { exact absurd h (lt_irrefl 1) },
+      { rw [(show (2 : fin 3) = fin.succ 1, by refl), ←fin.cast_succ_one,
+            drop_swap_adjacent'],
+        simp only [pow_add, mul_one, one_mul, fin.cast_succ_one, fin.coe_one,
+                   fin.coe_succ, pow_one, mul_neg_eq_neg_mul_symm, neg_neg]}, },
+    { exact absurd h (not_lt_of_le (fin.le_last j)) } },
+  set i' := i.pred (ne_of_gt ipos) with hi,
+  set j' := j.pred (ne_of_gt jpos) with hj,
+  have h' : i' < j',
+    { rw [←fin.succ_lt_succ_iff, hi, hj],
+      simpa only [fin.succ_pred] using h },
+  have jpos' : 0 < j' := lt_of_le_of_lt (fin.zero_le i') h',
+  rw [det_laplace_def, det_laplace_def],
+  rw [finset.mul_sum],
+  congr' 1,
+  ext x,
+  cases eq_or_lt_of_le (fin.zero_le i') with H H,
+  { rw fin.pred_succ_iff at hi,
+    rw ←hi,
+    rw ←H,
+    by_cases Hj : (j' = 1),
+    { rw fin.pred_succ_iff at hj,
+      rw [←hj, Hj, fin.succ_zero_eq_one, ←fin.cast_succ_one],
+      rw [drop_swap_adjacent' A],
+      simp only [pow_add, mul_one, one_mul, fin.cast_succ_one, fin.coe_one,
+                 fin.coe_succ, pow_one, mul_neg_eq_neg_mul_symm, neg_neg] },
+    { replace Hj : 1 < j' := lt_of_le_of_ne jpos' (ne.symm Hj),
+      simp only [fin.coe_one, fin.val_eq_coe, fin.succ_zero_eq_one],
+      rw drop_drop_01,
+      ring_exp,
+      -- rw drop_swap_zero_comm,
+      congr' 1,
+      { simp [drop_def, minor, fin.succ_above_below, jpos,
+              fin.one_pos, swap_row_ne_apply, fin.zero_ne_one, ne_of_lt jpos] },
+      {
+        rw ←mul_assoc,
+        congr' 1,
+        -- rw ←swap_row_thrice _ 1 0 j fin.zero_ne_one.symm (ne_of_lt jpos),
+        -- rw swap_row_symmetric,
+        have : j.pred_above 0 (ne_of_lt jpos) = 0,
+          { simpa only [fin.pred_above, jpos, dif_pos] },
+        -- rw ←this,
+        rw drop_swap_zero_comm,
+        simp,
+        rw fin.pred_above_zero,
+        simp_rw ←hj,
+        specialize hn (A.drop 0 jx) 1 j' x fin.one_pos Hj jpos',
+        simp [pow_add] at hn,
+        rw ring.pow_sub (fin.lt_iff_coe_lt_coe.mp jpos) at hn,
+        ring_exp at hn,
+        rw [mul_neg_eq_neg_mul_symm, eq_comm, neg_eq_iff_neg_eq] at hn,
+        rw ←hn,
+        rw ←det_swap01_eq_neg_det,
+        rw drop_swap_01',
+        rw drop_drop_01,
+        rw ←hj,
+        rw drop_drop_0i,
+        rw fin.coe_succ,
+        rw mul_one,
+        rw ←pow_add,
+        ring_exp,
+        ring_exp at hn,
+        rw ←hn,
+      },
+      rw det_swap_eq_neg_det,
+     } },
+  {  },
+  -- rw fin.pred_succ_iff at hj,
+  -- rw ←hj,
+  -- { rw fin.mk_zero at ipos,
+  --   exact absurd ipos (lt_irrefl 0) },
+  -- { set i' : fin (n + 2) := fin.pred ((⟨i.succ, hi⟩ : fin (n + 3))) (ne_of_gt ipos) with hx,
+  --   rw fin.pred_succ_iff at hx,
+  --   rw ←hx at *,
+  --   by_cases H : i' = 0,
+  --   { simp only [H, one_pow, one_mul, fin.coe_one, drop_swap_01', fin.succ_zero_eq_one, neg_square], },
+  --   },
+end
+
+lemma drop_swap_det0j (A : matrix (fin (n + 2)) (fin (n + 2)) R) (j jx : fin (n + 2)) (jpos : 0 < j) :
+  det' ((A.swap_row 0 j).drop 0 jx) = (-1) ^ ((j : ℕ) + 1) * det' (A.drop j jx) :=
+begin
+  induction n with n hn,
+  { fin_cases j,
+    { exact absurd jpos (lt_irrefl _) },
+    { simp only [one_pow, one_mul, fin.coe_one, drop_swap_01', neg_square] } },
+  obtain ⟨j, hj⟩ := j,
+  induction j with j HJ,
+  { simp only [fin.mk_zero] at jpos,
+    exact absurd jpos (lt_irrefl _) },
+  { set j' : fin (n + 2) := fin.pred ((⟨j.succ, hj⟩ : fin (n + 3))) (ne_of_gt jpos) with hx,
+    rw fin.pred_succ_iff at hx,
+    rw ←hx,
+    by_cases H : j' = 0,
+    { simp only [H, one_pow, one_mul, fin.coe_one, drop_swap_01', fin.succ_zero_eq_one, neg_square] },
+    {
+      have hj' : j < n + 3 := nat.lt_of_succ_lt hj,
+      specialize HJ (nat.lt_of_succ_lt hj),
+      have : (⟨j, hj'⟩ : fin (n + 3)) = j'.cast_succ := rfl,
+      rw this at HJ,
+      simp only [nat.succ_sub_succ_eq_sub, fin.coe_cast_succ, fin.coe_pred, nat.sub_zero, fin.coe_mk] at HJ,
+      rw [fin.coe_succ, pow_add],
+      rw ←drop_swap_adjacent',
+      simp,
+      rw ←HJ, }
+    },
+end
+
+lemma drop_swap_det0j' (A : matrix (fin (n + 2)) (fin (n + 2)) R) (j jx : fin (n + 2)) (jpos : 0 < j) :
+  det' ((A.swap_row 0 j).drop 0 jx) = (-1) ^ ((j : ℕ) + 1) * det' (A.drop j jx) :=
+begin
+  revert jpos jx,
+  apply elem_matrix.induction_on A j,
+  { intros A' j' jpos jx,
+    fin_cases j',
+    { exact absurd jpos (lt_irrefl _) },
+    { simp only [one_pow, one_mul, fin.coe_one, drop_swap_01', neg_square] } },
+  { intros jpos jx,
+    exact absurd jpos (lt_irrefl _) },
+  { intros j' A' IH jpos' jx,
+    rw ←swap_row_thrice A' 0 j'.cast_succ,
+    rw IH jx,
+  },
 end
 
 lemma drop_swap_detij (A : matrix (fin (n + 2)) (fin (n + 2)) R) (i j jx : fin (n + 2))
@@ -385,7 +385,7 @@ begin
     have hpos' : 0 < j := lt_trans hpos h,
     by_cases hi : i = 1,
     { rw hi at h ⊢,
-      rw drop_swap_det01,
+      rw ←swap_drop_01',
       rw det_laplace_def,
       rw det_laplace_def,
       congr' 1,
@@ -393,29 +393,13 @@ begin
       { simp only [minor, ne_of_lt hpos', fin.zero_ne_one, fin.succ_above_below, hpos', swap_row_ne_apply, fin.cast_succ_zero,
  fin.val_eq_coe, fin.succ_zero_eq_one, ne.def, not_false_iff, swap_row_apply],
         congr' 1,
-        { simp [minor, swap_row_ne_apply, ne_of_lt hpos', fin.zero_ne_one, fin.succ_above_below, hpos'] },
-        { have : ∀ (M : matrix (fin (n + 3)) (fin (n + 3)) R) (z z'),
-            drop (drop M 0 z) 0 z' = drop (drop M 1 z) 0 z',
-            { intros M z z',
-              ext x' y',
-              have : (1 : fin (n + 3)) ≤ x'.succ.cast_succ,
-                { rw fin.cast_succ_fin_succ,
-                  exact fin.succ_pos x'.cast_succ },
-              simp [minor, fin.succ_above_above, this] },
-          rw this,
-          have drop_swap_comm : ∀ (A : matrix (fin (n + 2)) (fin (n + 2)) R) col,
-            (A.swap_row 0 1).drop 1 col = (A.drop 0 col),
-            { intro col,
-              ext x y,
-              by_cases hxi : x = i',
-              { simp [hxi, minor] },
-              by_cases hxj : x = j',
-              { simp [hxj, minor] },
-              { rw swap_row_ne_apply _ _ _ _ _ hxi hxj,
-                rw fin.pred_succ_iff at hxi hxj,
-                simp only [minor, drop_zero_row, swap_row_ne_apply,
-                            hxi, hxj, ne.def, not_false_iff] } },
-          rw drop_swap_det01,
+        { simp [minor, swap_row_ne_apply, ne_of_lt hpos', fin.zero_ne_one, fin.succ_above_below, hpos', drop_def] },
+        {
+          simp_rw [←drop_01],
+          simp_rw [swap_drop_01],
+          -- simp_rw [←drop_01],
+          rw [swap_drop_zero_comm _ (ne_of_lt h) fin.one_pos hpos'],
+          simp [drop_zero_row, minor, drop_def],
           },
         ext y z,
                 },
