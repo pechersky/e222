@@ -222,14 +222,6 @@ begin
   set i' := fin.pred ⟨i.succ, hi⟩ (ne_of_gt ipos) with hi',
   rw fin.pred_succ_iff at hi',
   simp_rw ←hi',
-  rw [det_laplace_def, det_laplace_def],
-  rw [finset.mul_sum],
-  congr' 1,
-  ext x,
-  rw mul_comm ((-1 : R) ^ _),
-  rw mul_assoc ((A.drop _ _ _ _) * _),
-  congr' 1,
-  { simp [drop_def, minor, ←hi'], },
 end
 
 lemma drop_swap_det_ij (A : matrix (fin (n + 2)) (fin (n + 2)) R) (i j jx : fin (n + 2))
@@ -264,6 +256,8 @@ begin
   rw [finset.mul_sum],
   congr' 1,
   ext x,
+  rw swap_row_ne_apply _ _ _ _ _ (ne_of_lt ipos) (ne_of_lt (lt_trans ipos h)),
+  sorry,
   cases eq_or_lt_of_le (fin.zero_le i') with H H,
   { rw fin.pred_succ_iff at hi,
     rw ←hi,

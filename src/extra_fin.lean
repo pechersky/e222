@@ -149,9 +149,6 @@ end
   fin.pred_above 0 i = i.pred :=
 by { funext, simp only [fin.pred_above, not_lt_of_le i.zero_le, dif_neg, not_false_iff] }
 
-example {R : Type} [ring R] {x y : R} (h : x = -y) : -x = y :=
-by { rw neg_eq_iff_neg_eq,  }
-
 -- lemma nat.not_le_pred_gt {m n : ℕ} (h : m ≤ n - 1) (H : n < m) : false :=
 -- begin
 --   have hn : n < n - 1 := lt_of_lt_of_le H h,

@@ -1,4 +1,5 @@
 import data.matrix.basic
+import tactic.fin_cases
 import .extra_fin
 
 open_locale matrix
@@ -464,6 +465,83 @@ begin
 end
 
 end drop_swap
+
+section pairwise
+
+variables [semiring R]
+variables (A : matrix (fin (n + 2)) (fin (m + 2)) R)
+variables (A' : matrix (fin 5) (fin 5) R)
+
+-- def pairwise_swap0_aux : fin (n + 2) → matrix (fin (n + 2)) (fin (m + 2)) R :=
+-- λ i, @fin.succ_rec_on (n + 2) i (λ n' i', matrix (fin (n + 2)) (fin (m + 2)) R)
+-- (λ _, A)
+-- (λ n' i' h, swap_row h i'.cast_succ i'.succ)
+
+-- lemma ps0a : pairwise_swap0_aux A 0 = A := rfl
+
+-- lemma ps0a1 : pairwise_swap0_aux A 1 = A.swap_row 0 1 := rfl
+
+-- lemma ps0a2 : pairwise_swap0_aux A 2 = (A.swap_row 0 1).swap_row 1 2 :=
+-- begin
+--   unfold pairwise_swap0_aux,
+-- end
+
+def pairwise_swap0_aux : ℕ → matrix (fin (n + 2)) (fin (m + 2)) R
+| 0 := A
+| (nat.succ i) := if h : n + 1 ≤ i
+                    then A
+                    else let I := (fin.mk i (lt_of_not_ge' h)) in
+                    swap_row (pairwise_swap0_aux i) I.cast_succ I.succ
+
+def pairwise_swap0_aux' : ℕ → matrix (fin (n + 2)) (fin (m + 2)) R → matrix (fin (n + 2)) (fin (m + 2)) R
+| 0 M := M
+| (nat.succ i) M := if h : n + 1 ≤ i
+                      then M
+                      else let I := (fin.mk i (lt_of_not_ge' h)) in
+                      pairwise_swap0_aux' i (swap_row M I.cast_succ I.succ)
+
+def pairwise_swap0' : ℕ → matrix (fin (n + 2)) (fin (m + 2)) R
+| 0 := A
+| (nat.succ i) := pairwise_swap0_aux' i (pairwise_swap0_aux A i.succ)
+
+def pairwise_swap0 (i : fin (n + 2)) : matrix (fin (n + 2)) (fin (m + 2)) R :=
+pairwise_swap0' A i
+
+lemma pairwise_swap0_eq (i : fin (n + 2)) : pairwise_swap0 A i = A.swap_row 0 i :=
+begin
+  obtain ⟨i, hi⟩ := i,
+  ext x y,
+  by_cases h : (x = i),
+  simp [h, pairwise_swap0, pairwise_swap0'],
+  -- cases i with i i,
+  -- { simp only [pairwise_swap0, pairwise_swap0', fin.mk_zero, swap_row_eq, fin.coe_zero] },
+  -- induction i with i IH,
+  -- simp [pairwise_swap0, pairwise_swap0', pairwise_swap0_aux, pairwise_swap0_aux'],
+  -- -- have : ((⟨i.succ.succ, hi⟩ : fin (n + 2)) : ℕ) = i.succ.succ := rfl,
+  -- -- simp [pairwise_swap0, pairwise_swap0', pairwise_swap0_aux, pairwise_swap0_aux'],
+  -- specialize IH (nat.lt_of_succ_lt hi),
+  -- simp [pairwise_swap0, pairwise_swap0', pairwise_swap0_aux, pairwise_swap0_aux'] at IH,
+  -- rw dif_neg at IH,
+  -- simp [pairwise_swap0, pairwise_swap0', pairwise_swap0_aux, pairwise_swap0_aux'],
+  -- rw dif_neg,
+  -- rw dif_neg,
+  -- rw dif_neg,
+  -- have : fin.succ (⟨i, _⟩ : fin (n + 1)) = fin.cast_succ (⟨i.succ, _⟩) := rfl,
+  -- rw this,
+  -- rw swap_row_thrice,
+  -- rw ←swap_row_thrice,
+  -- rcases eq_or_lt_of_le (fin.zero_le i) with rfl|H,
+  -- { simp only [pairwise_swap0, pairwise_swap0', swap_row_eq, fin.coe_zero] },
+  -- { set i' := i.pred (ne_of_gt H) with hi,
+  --   rw fin.pred_succ_iff at hi,
+  --   rw ←hi,
+  --   simp only [pairwise_swap0],
+  --   rw (show ((i'.succ : ℕ) = (i' : ℕ).succ), by { sorry }),
+  --   simp only [pairwise_swap0', pairwise_swap0_aux, pairwise_swap0_aux'],
+  --   },
+end
+
+end pairwise
 
 section swap_swap
 
