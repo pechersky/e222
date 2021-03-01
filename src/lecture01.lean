@@ -3,8 +3,11 @@ import data.matrix.notation
 import linear_algebra.matrix
 import linear_algebra.determinant
 import group_theory.perm.fin
+import tactic.norm_swap
 
 open_locale big_operators
+
+section
 
 -- We specialize `matrix` for n × n matrices
 notation `Mn[` α `]` n := matrix (fin n) (fin n) α
@@ -209,10 +212,242 @@ begin
 end
 
 -- determinant of a 2 x 2 matrix is a * d - b * c
-example (A : MnR 2) {a b c d : ℝ} (hA : A = ![![a, b], ![c, d]]) :
+lemma det_2 (A : MnR 2) {a b c d : ℝ} (hA : A = ![![a, b], ![c, d]]) :
         matrix.det A = a * d - b * c :=
 begin
   simp [matrix.det, hA, finset.univ_perm_fin_succ, ←finset.univ_product_univ, finset.sum_product,
         fin.sum_univ_succ, fin.prod_univ_succ],
   ring
+end
+
+--  A matrix is invertible iff the determinant is nonzero
+lemma is_unit_iff_det_ne_zero  {n : ℕ} (A : MnR n) : is_unit A ↔ A.det ≠ 0 :=
+begin
+  rw matrix.is_unit_iff_is_unit_det,
+  exact is_unit_iff_ne_zero
+end
+
+-- The general linear group, as a subtype of matrices
+abbreviation GLₙ (n : ℕ) (α : Type*) [comm_ring α] : Type* := units (matrix (fin n) (fin n) α)
+
+lemma GLₙ.is_unit_det {n : ℕ} (A : GLₙ n ℝ) : is_unit (matrix.det (A : MnR n)) :=
+begin
+  rw ←matrix.is_unit_iff_is_unit_det,
+  exact is_unit_unit _
+end
+
+lemma GLₙ.det_ne_zero {n : ℕ} (A : GLₙ n ℝ) : matrix.det (A : MnR n) ≠ 0 :=
+begin
+  rw ←is_unit_iff_det_ne_zero,
+  exact is_unit_unit _
+end
+
+-- For GL₁(ℝ) matrices, everything but 0
+example (A : GLₙ 1 ℝ) : (A : MnR 1) ≠ 0 :=
+begin
+  intro H,
+  simpa [H] using A.det_ne_zero
+end
+
+-- For M₂(ℝ) matrices, there are nonzero examples that are not GL₂(ℝ)
+example (A : GLₙ 2 ℝ) : ![![(0 : ℝ), 1], ![0, 0]] ≠ (A : MnR 2) :=
+begin
+  intro H,
+  apply A.det_ne_zero,
+  rw [←H, det_2 _ rfl],
+  simp
+end
+
+-- If the inverse exists, it is unique
+example {n : ℕ} (A : MnR n) (h : ∃ B, A * B = 1 ∧ B * A = 1) : ∃! B, (A * B = 1 ∧ B * A = 1) :=
+begin
+  refine exists_unique_of_exists_of_unique h _,
+  rintros B C ⟨hAB, hBA⟩ ⟨hAC, hCA⟩,
+  have : B * (A * B) = B * (A * C),
+    { rw [hAB, hAC] },
+  rwa [matrix.mul_eq_mul, matrix.mul_eq_mul, ←matrix.mul_assoc,
+      matrix.mul_eq_mul, matrix.mul_eq_mul, ←matrix.mul_assoc,
+      ←matrix.mul_eq_mul, ←matrix.mul_eq_mul, ←matrix.mul_eq_mul, hBA,
+      one_mul, one_mul] at this
+end
+
+-- GLₙ(ℝ) is not closed under addition
+example (n : ℕ) : ¬ is_unit (((1 : GLₙ (n + 1) ℝ) : MnR (n + 1)) + (-1 : GLₙ (n + 1) ℝ)) :=
+begin
+  rw [units.coe_one, units.coe_neg_one, add_right_neg],
+  exact not_is_unit_zero
+end
+
+-- GLₙ(ℝ) is not closed under scalar multiplication by 0
+example (k : ℝ) {n : ℕ} (A : GLₙ (n + 1) ℝ) : ¬ is_unit (k • (A : MnR (n + 1))) ↔ k = 0 :=
+begin
+  rw not_iff_comm,
+  split,
+  { intro h,
+    refine ⟨⟨k • (A : MnR (n + 1)), (k • A)⁻¹, _, _⟩, rfl⟩;
+    { rw matrix.mul_eq_mul,
+      rw matrix.mul_nonsing_inv <|> rw matrix.nonsing_inv_mul,
+      rw [matrix.det_smul, is_unit_iff_ne_zero, mul_ne_zero_iff],
+      exact ⟨pow_ne_zero _ h, A.det_ne_zero⟩ } },
+  { rintro ⟨⟨A', B, hAB, hBA⟩, h⟩ rfl,
+    rw [units.coe_mk, zero_smul] at h,
+    rw [h, zero_mul] at hAB,
+    exact zero_ne_one hAB }
+end
+
+-- GLₙ(ℝ) is closed under multiplication, proof 1
+example {n : ℕ} (A B : GLₙ n ℝ) : is_unit ((A : MnR n) * B) :=
+begin
+  refine ⟨⟨(A : MnR n) * B, B⁻¹ * A⁻¹, _, _⟩, rfl⟩;
+  simp_rw [matrix.mul_eq_mul],
+  { rw [matrix.mul_assoc, ←matrix.mul_assoc (B : MnR n), matrix.mul_nonsing_inv _ B.is_unit_det,
+      matrix.one_mul, matrix.mul_nonsing_inv _ A.is_unit_det] },
+  { rw [matrix.mul_assoc, ←matrix.mul_assoc _ (A : MnR n), matrix.nonsing_inv_mul _ A.is_unit_det,
+      matrix.one_mul, matrix.nonsing_inv_mul _ B.is_unit_det] }
+end
+
+-- GLₙ(ℝ) is closed under multiplication, proof 2
+example {n : ℕ} (A B : GLₙ n ℝ) : is_unit ((A : MnR n) * B) :=
+begin
+  rw [matrix.is_unit_iff_is_unit_det, matrix.mul_eq_mul, matrix.det_mul],
+  exact A.is_unit_det.mul B.is_unit_det
+end
+
+-- GLₙ(ℝ) contains 1
+example {n : ℕ} : is_unit (1 : MnR n) := ⟨⟨1, 1, one_mul _, one_mul _⟩, rfl⟩
+
+-- GLₙ(ℝ) contains inverses
+example {n : ℕ} (A : GLₙ n ℝ) : is_unit ((A : MnR n)⁻¹) :=
+begin
+  refine ⟨⟨A⁻¹, A, _, _⟩, rfl⟩,
+  rw [matrix.mul_eq_mul, matrix.nonsing_inv_mul _ A.is_unit_det],
+  rw [matrix.mul_eq_mul, matrix.mul_nonsing_inv _ A.is_unit_det]
+end
+
+-- GLₙ(ℝ) multiplication is associative
+example {n : ℕ} (A B C : GLₙ n ℝ) : A * B * C = A * (B * C) :=
+begin
+  rw mul_assoc -- inherited from group structure on `units`
+end
+
+class group_ (α : Type*) :=
+(op : α → α → α)
+(assoc' : ∀ g h k : α, op g (op h k) = op (op g h) k)
+(e : α)
+(op_e' : ∀ g, op g e = g)
+(e_op' : ∀ g, op e g = g)
+(inv : α → α)
+(inv_op' : ∀ g, op (inv g) g = e)
+(op_inv' : ∀ g, op g (inv g) = e)
+
+variables {α : Type*} [group_ α]
+
+namespace group_
+
+instance : has_mul α := ⟨group_.op⟩
+instance : has_one α := ⟨group_.e⟩
+instance : has_inv α := ⟨group_.inv⟩
+
+@[simp] lemma op_eq_mul (g h : α) : op g h = g * h := rfl
+@[simp] lemma e_eq_one : (group_.e : α) = 1 := rfl
+@[simp] lemma inv_eq_inv (g : α) : inv g = g⁻¹ := rfl
+lemma mul_assoc (g h k: α) : g * (h * k) = (g * h) * k := group_.assoc' _ _ _
+@[simp] lemma mul_one (g : α) : g * 1 = g := group_.op_e' _
+@[simp] lemma one_mul (g : α) : 1 * g = g := group_.e_op' _
+@[simp] lemma inv_mul (g : α) : g⁻¹ * g = 1 := inv_op' _
+@[simp] lemma mul_inv (g : α) : g * g⁻¹ = 1 := op_inv' _
+
+end group_
+
+class abelian_group_ (α : Type*) extends group_ α :=
+(comm' : ∀ (g h : α), g * h = h * g)
+
+lemma abelian_group_.comm {α : Type*} [abelian_group_ α] (g h : α) : g * h = h * g :=
+abelian_group_.comm' _ _
+
+-- The integers are an abelian group
+example : abelian_group_ ℤ :=
+{ op := (+),
+  assoc' := λ _ _ _, (int.add_assoc _ _ _).symm,
+  e := 0,
+  op_e' := int.add_zero,
+  e_op' := int.zero_add,
+  inv := λ x, -x,
+  inv_op' := int.add_left_neg,
+  op_inv' := int.add_right_neg,
+  comm' := int.add_comm }
+
+-- Any vector space is an abelian group. Uses the proofs for groups already in mathlib
+example (K V : Type*) [field K] [add_comm_group V] [vector_space K V] : abelian_group_ V :=
+{ op := (+),
+  assoc' := λ _ _ _, (add_assoc _ _ _).symm,
+  e := 0,
+  op_e' := add_zero,
+  e_op' := zero_add,
+  inv := λ x, -x,
+  inv_op' := add_left_neg,
+  op_inv' := add_right_neg,
+  comm' := add_comm }
+
+-- The bijections (symmetries) of a type are a group
+example (T : Type*) : group_ (T ≃ T) :=
+{ op := equiv.trans,
+  assoc' := equiv.trans_assoc,
+  e := equiv.refl _,
+  op_e' := equiv.trans_refl,
+  e_op' := equiv.refl_trans,
+  inv := equiv.symm,
+  inv_op' := equiv.symm_trans,
+  op_inv' := equiv.trans_symm }
+
+end
+
+open matrix set linear_map
+variables {R n : Type*} [comm_ring R] [fintype n] [decidable_eq n]
+
+/-- Linear maps `(n → R) →ₗ[R] (n → R)` are ring-equivalent to `matrix n n R`. -/
+def linear_map.to_matrix'' : ((n → R) →ₗ[R] (n → R)) ≃+* matrix n n R :=
+{ to_fun := to_matrix',
+  inv_fun := to_lin',
+  left_inv := to_lin'_to_matrix',
+  right_inv := to_matrix'_to_lin',
+  map_mul' := to_matrix'_mul,
+  map_add' := linear_equiv.map_add' _}
+
+@[simp] lemma matrix.algebra_map_eq_smul (r : R) : (algebra_map R (matrix n n R)) r = r • 1 := rfl
+
+/-- Linear maps `(n → R) →ₗ[R] (n → R)` are ring-equivalent to `matrix n n R`. -/
+def linear_map.to_matrix''a : ((n → R) →ₗ[R] (n → R)) ≃ₐ[R] matrix n n R :=
+{ to_fun := to_matrix',
+  inv_fun := to_lin',
+  left_inv := to_lin'_to_matrix',
+  right_inv := to_matrix'_to_lin',
+  map_mul' := to_matrix'_mul,
+  map_add' := linear_equiv.map_add' _,
+  commutes' := λ _, by {
+    ext,
+    simp only [matrix.algebra_map_eq_smul, module.algebra_map_End_apply,
+               to_matrix'_apply, pi.smul_apply],
+    congr } }
+
+-- The definition of GLₙ(ℝ) is group-equivalent to the mathlib definition
+example {n : ℕ} : (GLₙ n ℝ) ≃* linear_map.general_linear_group ℝ (fin n → ℝ) :=
+units.map_equiv (@linear_map.to_matrix''a ℝ (fin n) _ _ _).symm
+
+-- The symmetric group, as permutations of `fin n`
+notation `Sₙ ` n := equiv.perm (fin n)
+
+-- Sₙ is a finite group of order `n!`
+example {n : ℕ} : fintype.card (Sₙ n) = nat.factorial n :=
+by rw [fintype.card_perm, fintype.card_fin]
+
+-- Sₙ is not abelian for n = 3
+example : ∃ g h : Sₙ 3, g * h ≠ h * g :=
+begin
+  use [equiv.swap 0 1, equiv.swap 0 2],
+  intro H,
+  -- evaluate the swaps at the first element, which will make 2 = 1
+  have := equiv.congr_fun H 0,
+  -- norm_num discharges the false goal with the false hypothesis
+  norm_num at this
 end
