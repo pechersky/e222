@@ -405,34 +405,9 @@ end
 open matrix set linear_map
 variables {R n : Type*} [comm_ring R] [fintype n] [decidable_eq n]
 
-/-- Linear maps `(n → R) →ₗ[R] (n → R)` are ring-equivalent to `matrix n n R`. -/
-def linear_map.to_matrix'' : ((n → R) →ₗ[R] (n → R)) ≃+* matrix n n R :=
-{ to_fun := to_matrix',
-  inv_fun := to_lin',
-  left_inv := to_lin'_to_matrix',
-  right_inv := to_matrix'_to_lin',
-  map_mul' := to_matrix'_mul,
-  map_add' := linear_equiv.map_add' _}
-
-@[simp] lemma matrix.algebra_map_eq_smul (r : R) : (algebra_map R (matrix n n R)) r = r • 1 := rfl
-
-/-- Linear maps `(n → R) →ₗ[R] (n → R)` are ring-equivalent to `matrix n n R`. -/
-def linear_map.to_matrix''a : ((n → R) →ₗ[R] (n → R)) ≃ₐ[R] matrix n n R :=
-{ to_fun := to_matrix',
-  inv_fun := to_lin',
-  left_inv := to_lin'_to_matrix',
-  right_inv := to_matrix'_to_lin',
-  map_mul' := to_matrix'_mul,
-  map_add' := linear_equiv.map_add' _,
-  commutes' := λ _, by {
-    ext,
-    simp only [matrix.algebra_map_eq_smul, module.algebra_map_End_apply,
-               to_matrix'_apply, pi.smul_apply],
-    congr } }
-
 -- The definition of GLₙ(ℝ) is group-equivalent to the mathlib definition
 example {n : ℕ} : (GLₙ n ℝ) ≃* linear_map.general_linear_group ℝ (fin n → ℝ) :=
-units.map_equiv (@linear_map.to_matrix''a ℝ (fin n) _ _ _).symm
+units.map_equiv (@linear_map.to_matrix_alg_equiv' ℝ _ (fin n) _ _).symm
 
 -- The symmetric group, as permutations of `fin n`
 notation `Sₙ ` n := equiv.perm (fin n)
