@@ -104,8 +104,7 @@ begin
   use ![![0, 0], ![0, 1]],
   intros h,
   replace h := congr_fun (congr_fun h 0) 1,
-  norm_num at h,
-  exact h,
+  norm_num at h
 end
 
 -- Zero matrix is the zero element of the vector space,
