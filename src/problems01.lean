@@ -108,6 +108,5 @@ begin
         ring at h02,
         simpa using h02 },
     replace h12 : c = 0 := by simpa [h02] using h12,
-    norm_num [h02, h12] at h22,
-    exact h22 }
+    norm_num [h02, h12] at h22 }
 end
