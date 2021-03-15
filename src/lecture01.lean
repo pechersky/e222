@@ -7,6 +7,8 @@ import tactic.norm_swap
 
 open_locale big_operators
 
+namespace e222
+
 section
 
 -- We specialize `matrix` for n × n matrices
@@ -330,7 +332,7 @@ begin
   rw mul_assoc -- inherited from group structure on `units`
 end
 
-class group_ (α : Type*) :=
+class group (α : Type*) :=
 (op : α → α → α)
 (assoc' : ∀ g h k : α, op g (op h k) = op (op g h) k)
 (e : α)
@@ -340,33 +342,33 @@ class group_ (α : Type*) :=
 (inv_op' : ∀ g, op (inv g) g = e)
 (op_inv' : ∀ g, op g (inv g) = e)
 
-variables {α : Type*} [group_ α]
+variables {α : Type*} [group α]
 
-namespace group_
+namespace group
 
-instance : has_mul α := ⟨group_.op⟩
-instance : has_one α := ⟨group_.e⟩
-instance : has_inv α := ⟨group_.inv⟩
+instance : has_mul α := ⟨group.op⟩
+instance : has_one α := ⟨group.e⟩
+instance : has_inv α := ⟨group.inv⟩
 
 @[simp] lemma op_eq_mul (g h : α) : op g h = g * h := rfl
-@[simp] lemma e_eq_one : (group_.e : α) = 1 := rfl
+@[simp] lemma e_eq_one : (group.e : α) = 1 := rfl
 @[simp] lemma inv_eq_inv (g : α) : inv g = g⁻¹ := rfl
-lemma mul_assoc (g h k: α) : g * (h * k) = (g * h) * k := group_.assoc' _ _ _
-@[simp] lemma mul_one (g : α) : g * 1 = g := group_.op_e' _
-@[simp] lemma one_mul (g : α) : 1 * g = g := group_.e_op' _
+lemma mul_assoc (g h k: α) : g * (h * k) = (g * h) * k := group.assoc' _ _ _
+@[simp] lemma mul_one (g : α) : g * 1 = g := group.op_e' _
+@[simp] lemma one_mul (g : α) : 1 * g = g := group.e_op' _
 @[simp] lemma inv_mul (g : α) : g⁻¹ * g = 1 := inv_op' _
 @[simp] lemma mul_inv (g : α) : g * g⁻¹ = 1 := op_inv' _
 
-end group_
+end group
 
-class abelian_group_ (α : Type*) extends group_ α :=
+class abelian_group (α : Type*) extends group α :=
 (comm' : ∀ (g h : α), g * h = h * g)
 
-lemma abelian_group_.comm {α : Type*} [abelian_group_ α] (g h : α) : g * h = h * g :=
-abelian_group_.comm' _ _
+lemma abelian_group.comm {α : Type*} [abelian_group α] (g h : α) : g * h = h * g :=
+abelian_group.comm' _ _
 
 -- The integers are an abelian group
-example : abelian_group_ ℤ :=
+example : abelian_group ℤ :=
 { op := (+),
   assoc' := λ _ _ _, (int.add_assoc _ _ _).symm,
   e := 0,
@@ -378,7 +380,7 @@ example : abelian_group_ ℤ :=
   comm' := int.add_comm }
 
 -- Any vector space is an abelian group. Uses the proofs for groups already in mathlib
-example (K V : Type*) [field K] [add_comm_group V] [vector_space K V] : abelian_group_ V :=
+example (K V : Type*) [field K] [add_comm_group V] [vector_space K V] : abelian_group V :=
 { op := (+),
   assoc' := λ _ _ _, (add_assoc _ _ _).symm,
   e := 0,
@@ -390,7 +392,7 @@ example (K V : Type*) [field K] [add_comm_group V] [vector_space K V] : abelian_
   comm' := add_comm }
 
 -- The bijections (symmetries) of a type are a group
-example (T : Type*) : group_ (T ≃ T) :=
+example (T : Type*) : group (T ≃ T) :=
 { op := equiv.trans,
   assoc' := equiv.trans_assoc,
   e := equiv.refl _,
@@ -426,3 +428,5 @@ begin
   -- norm_num discharges the false goal with the false hypothesis
   norm_num at this
 end
+
+end e222
