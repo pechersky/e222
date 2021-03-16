@@ -1,0 +1,35 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\GL}{\text{GL}}
+\newcommand{\inv}[1]{#1^{-1}}
+\theoremstyle{definition}
+\newtheorem*{fact}{Fact}
+\newtheorem*{defn}{Definition}
+
+\begin{document}
+
+\author{Yakov Pechersky}
+
+\title{Lecture 02}
+
+\maketitle
+
+\section{Lecture}
+
+Previously: \(\GL_n(\RR) = \{\) all invertible \(n \times n\) matrices \(A\) with entries \(a_{ij} \in \RR\}\)
+
+similarly: \(\GL_n(\mathbb{C}) = \{\) all invertible \(n \times n\) matrices \(A\) with entries \(a_{ij} \in \mathbb{C}\}\)
+\(\GL_n(\mathbb{Q}) = \{\) all invertible \(n \times n\) matrices \(A\) with entries \(a_{ij} \in \mathbb{Q}\}\),
+where \(\mathbb{Q}\) are the rational numbers.
+
+All are groups \(G\).
+
+A \emph{group} is \begin{itemize} \setlength\itemsep{1em}
+    \item a set with a product structure \(a, b \in G, a \cdot b \in G\)
+    \item associative \(a \cdot (b \cdot c) = (a \cdot b) \cdot c\)
+    \item identity \(e\) such that \(a \cdot e = e \cdot a = a\)
+    \item inverse \(a \mapsto \inv{a}\) such that \(a \cdot \inv{a} = \inv{a} \cdot a = e\)
+\end{itemize}
+
+\end{document}
