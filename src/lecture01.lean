@@ -69,7 +69,7 @@ begin
 end
 
 -- Multiplication is defined on n x n matrices
-example : has_mul (MnR n) := by show_term { apply_instance }
+example : has_mul (MnR n) := by apply_instance -- show_term gives matrix.has_mul
 
 -- Multiplication is defined by sum of row elements times column elements
 example : A * B = λ i j, ∑ k , A i k * B k j := rfl
@@ -216,7 +216,7 @@ end
 lemma det_2 (A : MnR 2) {a b c d : ℝ} (hA : A = ![![a, b], ![c, d]]) :
         matrix.det A = a * d - b * c :=
 begin
-  simp [matrix.det, hA, finset.univ_perm_fin_succ, ←finset.univ_product_univ, finset.sum_product,
+  simp [matrix.det_apply, hA, finset.univ_perm_fin_succ, ←finset.univ_product_univ, finset.sum_product,
         fin.sum_univ_succ, fin.prod_univ_succ],
   ring
 end
@@ -352,7 +352,7 @@ instance : has_inv α := ⟨group.inv⟩
 @[simp] lemma op_eq_mul (g h : α) : op g h = g * h := rfl
 @[simp] lemma e_eq_one : (group.e : α) = 1 := rfl
 @[simp] lemma inv_eq_inv (g : α) : inv g = g⁻¹ := rfl
-lemma mul_assoc (g h k: α) : g * (h * k) = (g * h) * k := group.assoc' _ _ _
+lemma mul_assoc (g h k : α) : g * (h * k) = (g * h) * k := group.assoc' _ _ _
 @[simp] lemma mul_one (g : α) : g * 1 = g := group.op_e' _
 @[simp] lemma one_mul (g : α) : 1 * g = g := group.e_op' _
 @[simp] lemma inv_mul (g : α) : g⁻¹ * g = 1 := inv_op' _
