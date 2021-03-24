@@ -1,5 +1,6 @@
 \documentclass[12pt]{article}
 \usepackage{amsmath,amssymb,amsthm}
+\usepackage{quiver}
 \newcommand{\RR}{\mathbb{R}}
 \newcommand{\GL}{\text{GL}}
 \newcommand{\inv}[1]{#1^{-1}}
@@ -17,7 +18,7 @@
 
 \section*{Lecture}
 
-Previously: \[\GL_n (\RR) = \{ \text{all invertible } n \times n \text{ matrices } A \text{ with entries } a_{ij} \in \RR \} \] 
+Previously: \[\GL_n (\RR) = \{ \text{all invertible } n \times n \text{ matrices } A \text{ with entries } a_{ij} \in \RR \} \]
 similarly:
 \[\GL_n (\mathbb{C}) = \{ \text{all invertible } n \times n \text{ matrices } A \text{ with entries } a_{ij} \in \mathbb{C} \} \]
 \[\GL_n (\mathbb{Q}) = \{ \text{all invertible } n \times n \text{ matrices } A \text{ with entries } a_{ij} \in \mathbb{Q} \} \]
@@ -53,7 +54,130 @@ Let's observe that \(\GL_n\RR \) is a subgroup of \(\text{Sym}(\RR^n)\). Composi
 two linear bijections you get a third linear map, so it is closed under multiplication.
 It contains the identity, which is the identity matrix. If an element is linear, then the inverse is linear. So it is a subgroup.
 
-We have \[ S_n = \text{Sym}(\{1,2,3,\ldots,n\}) \]
+We have \[ S_n = \text{Sym}(\{1,2,3,\ldots,n-1,n\}) \]
+\[ = \text{permutation group on } n \text{ letters} \]
+\[ = \text{symmetric group on } n \text{ letters} \]
+This is a \emph{finite} group of order \(|S_n| = n! \)
+Let's take a look at the symmetric group of a few letters.
+\[ S_1 = \{e\} \]
+\[ S_2:
+\left.\begin{tikzcd}[ column sep=2em, row sep=1em]
+	1 & 1 \\
+	2 & 2 \\
+	\arrow[from=1-1, to=1-2, maps to]
+	\arrow[from=2-1, to=2-2, maps to]
+\end{tikzcd}
+\right\} \,e\;
+\left.\begin{tikzcd}[nodes={inner sep=4pt}, column sep=2em, row sep=1em]
+	1 & 1 \\
+	2 & 2 \\
+	\arrow[from=1-1, to=2-2, maps to]
+	\arrow[from=2-1, to=1-2, maps to]
+\end{tikzcd}
+\right\}\,\tau;\;
+e\tau = \tau e=\tau; \tau\tau=e (\tau=\inv{\tau})
+\]
+If \(a\cdot b=b\cdot a\) for all pairs, say \(G\) is abelian (or commutative).
+\[
+\left.\begin{tikzcd}[nodes={inner sep=4pt}, column sep=2em, row sep=1em]
+	1 & 1 \\
+	2 & 2 \\
+	3 & 3
+	\arrow[from=1-1, to=2-2, maps to]
+	\arrow[from=2-1, to=1-2, maps to]
+	\arrow[from=3-1, to=3-2, maps to]
+\end{tikzcd}\right\}\tau\quad
+\left.\begin{tikzcd}[nodes={inner sep=4pt}, column sep=2em, row sep=1em]
+	1 & 1 \\
+	2 & 2 \\
+	3 & 3
+	\arrow[from=1-1, to=1-2, maps to]
+	\arrow[from=2-1, to=3-2, maps to]
+	\arrow[from=3-1, to=2-2, maps to]
+\end{tikzcd}\right\}\tau'\quad
+\left.\begin{tikzcd}[nodes={inner sep=4pt}, column sep=2em, row sep=1em]
+	1 & 1 \\
+	2 & 2 \\
+	3 & 3
+	\arrow[from=1-1, to=2-2, maps to]
+	\arrow[from=2-1, to=1-2, maps to]
+	\arrow[from=3-1, to=3-2, maps to]
+\end{tikzcd}\right\}\tau''
+\]
+\[\text{transpositions (exchanging 2 elements)}\]
+\[
+\left.\begin{tikzcd}[nodes={inner sep=4pt}, column sep=2em, row sep=1em]
+	1 & 1 \\
+	2 & 2 \\
+	3 & 3
+	\arrow[from=1-1, to=2-2, maps to]
+	\arrow[from=2-1, to=3-2, maps to]
+	\arrow[from=3-1, to=1-2, maps to]
+\end{tikzcd}\right\}\sigma\quad
+\left.\begin{tikzcd}[nodes={inner sep=4pt}, column sep=2em, row sep=1em]
+	1 & 1 \\
+	2 & 2 \\
+	3 & 3
+	\arrow[from=1-1, to=3-2, maps to]
+	\arrow[from=2-1, to=1-2, maps to]
+	\arrow[from=3-1, to=2-2, maps to]
+\end{tikzcd}\right\}\sigma'
+\]
+\[S_3 = \{e, \tau, \tau', \tau'', \sigma, \sigma'\}\]
+\[\tau\sigma(1)=\tau(\sigma(1))=\tau(2)=1\]
+So \(\tau\sigma\) is either \(e\) is \(\tau'\). But it is not \(e\). Pf. \(\tau\sigma(2)=\tau(3)=3\). So \(\tau\sigma=\tau'\).
+But also, we can check by inverses. Since \(\inv{\tau}=\tau\ne\sigma, \tau\sigma\ne e\).
+For all transpositions \(\tau, \tau\inv{\tau}=e\).
+\[\sigma\tau(1)=\sigma(2)=3\quad\sigma\tau(2)=\sigma(1)=2\qquad\sigma\tau=\tau''\qquad\sigma\tau\ne\tau\sigma\]
+Corollary. The group \(S_n\) is \emph{non-abelian} for all \(n \ge 3\).
+
+Proof. \(S_3\subset S_n\) fixing the letters \(\{4, 5, 6, \ldots, n\}\) is a non-abelian subgroup.
+\\
+Another subgroup: \(k \le n, S_k \subset S_n, \left\{\text{ permutations fixing } \{k+1, k+2, \ldots, n\} \right\}\)
+\\
+What is the subgroup of \(\GL_2(\RR)\) which stabilizes the line \(y = 0\)?
+\[
+    \left\{A = \begin{pmatrix}
+        a && c\\
+        0 && d
+    \end{pmatrix} : ad \ne 0\right\}\quad
+    \begin{pmatrix}
+        a && c\\
+        0 && d
+    \end{pmatrix}
+    \begin{pmatrix}
+        a' && c'\\
+        0 && d'
+    \end{pmatrix} =
+    \begin{pmatrix}
+        aa'  && \cdot  \\
+        0 && dd'
+    \end{pmatrix}
+\]
+Proposition. The subgroups of \((\mathbb{Z}, +)\) are precisely given by \((b\mathbb{Z}, +)\) for \(b\) a fixed integer.
+A definition should also follow by the trivial examples. Sometimes there are no more examples.
+
+The two trivial subgroups of any group: the group itself (the biggest), and just the identity element (the smallest).
+For \(b=0\) we get \(\{0, +\}\), \(b=1\) gives \(H = G\).
+
+Proof. First, these are all subgroups.
+\[bm + bn = b(m+n)\qquad -bm = b(-m)\qquad 0=b0\]
+
+To show these exhaust the subgroups, let \(H \subset \mathbb{Z}\) be a subgroup.
+Case 1: \(H = \{0\}\). Case 2: \(H \ne \{0\}\) so contains \(m \ne 0\). Taking \(m\) or \(-m\in H\), we see it contains \(m > 0\).
+So it contains inverses. Let \(b > 0\) be the smallest positive integer contained in \(H\). Then \(H\supset b\mathbb{Z}\), by closure under addition and inversion.
+
+Suppose \(h \in H, h = mb + r, 0 \le r < b\). Claim \(r = 0\). Why? Because \(r \in H\) because \(h + (-mb) \in H\) because closed under inversion and addition,
+and \(r < b\), so \(r = 0\).
+\\
+Any group \(G\) with \(g \in G\), let \(H = \langle g\rangle\) be the subgroup generated by \(g\), which is the smallest subgroup
+containing \(g, \{e, g, g^{-1}, g^2, g^{-2}, \ldots\} = \{g^m : m \in \mathbb{Z}\}\) because \(g^m\cdot g^n = g^(m + n), (g^m)^{-1}=g^{-m}\).
+Closed under addition, inversion, contains identity. But the powers are not necessarily distinct. Take \(\tau\in S_3\), which gives \(\langle \tau\rangle=\{e, \tau\}\).
+
+If \(g^m = e\) and \(m\) is the smallest positive such power, we say \(m\) is the \emph{order} of \(g \in G\). If not such power, we say the order is infinite.
+We find that for \(\tau\), order is 2. We find that for \(\sigma\), order is 3. We will find that in a finite group, every element has a finite order, and that the order of any element divides the order of the group.
+
+
 
 \section*{Problem set}
 \subsection*{2.1.5}
@@ -63,7 +187,7 @@ Let \(S\) be any set. Prove that the law of composition defined by \(ab = a\) is
 \subsection*{2.2.1}
 Determine the elements of the cyclic group generated by the matrix \(\left[\begin{smallmatrix}
    1 & 1\\
-   -1 & 0 
+   -1 & 0
 \end{smallmatrix}\right]\) explicitly.
 \subsection*{2.2.15}
 (a) In the definition of subgroup, the identity element in \(H\) is required to be the identity of \(G\).
