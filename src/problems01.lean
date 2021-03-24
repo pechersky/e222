@@ -105,7 +105,7 @@ begin
     replace h02 : f = 0,
       { rw h12 at h02,
         norm_num at h02,
-        ring at h02,
+        ring_nf at h02,
         simpa using h02 },
     replace h12 : c = 0 := by simpa [h02] using h12,
     norm_num [h02, h12] at h22 }
