@@ -27,17 +27,17 @@ noncomputable instance {K n' : Type*} [comm_ring K] [fintype n'] [decidable_eq n
     by simp only [units.coe_mul, units.coe_one, matrix.mul_eq_mul, matrix.one_mul],
   inv := λ a, ⟨a⁻¹, a,
     by rw [matrix.mul_eq_mul, matrix.nonsing_inv_mul _
-           ((matrix.is_unit_iff_is_unit_det _).mp (is_unit_unit a))],
+           ((matrix.is_unit_iff_is_unit_det _).mp a.is_unit)],
     by rw [matrix.mul_eq_mul, matrix.mul_nonsing_inv _
-           ((matrix.is_unit_iff_is_unit_det _).mp (is_unit_unit a))]⟩,
-  inv_op' := λ _, units.ext $ by
+           ((matrix.is_unit_iff_is_unit_det _).mp a.is_unit)]⟩,
+  inv_op' := λ x, units.ext $ by
     rw [units.coe_mul, units.coe_mk, units.coe_one,
         matrix.mul_eq_mul, matrix.nonsing_inv_mul _
-        ((matrix.is_unit_iff_is_unit_det _).mp (is_unit_unit _))],
-  op_inv' := λ _, units.ext $ by
+        ((matrix.is_unit_iff_is_unit_det _).mp x.is_unit)],
+  op_inv' := λ x, units.ext $ by
     rw [units.coe_mul, units.coe_mk, units.coe_one,
         matrix.mul_eq_mul, matrix.mul_nonsing_inv _
-        ((matrix.is_unit_iff_is_unit_det _).mp (is_unit_unit _))] }
+        ((matrix.is_unit_iff_is_unit_det _).mp x.is_unit)] }
 
 noncomputable instance : group (GLₙ n ℝ) := by apply_instance
 

@@ -234,13 +234,13 @@ abbreviation GLₙ (n : ℕ) (α : Type*) [comm_ring α] : Type* := units (matri
 lemma GLₙ.is_unit_det {n : ℕ} (A : GLₙ n ℝ) : is_unit (matrix.det (A : MnR n)) :=
 begin
   rw ←matrix.is_unit_iff_is_unit_det,
-  exact is_unit_unit _
+  exact units.is_unit _
 end
 
 lemma GLₙ.det_ne_zero {n : ℕ} (A : GLₙ n ℝ) : matrix.det (A : MnR n) ≠ 0 :=
 begin
   rw ←is_unit_iff_det_ne_zero,
-  exact is_unit_unit _
+  exact units.is_unit _
 end
 
 -- For GL₁(ℝ) matrices, everything but 0
