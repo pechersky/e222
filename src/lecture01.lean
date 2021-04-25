@@ -22,7 +22,7 @@ variables (A : MnR n) (B : MnR n) (C : MnR n)
 
 -- Call the collection of n × n matrices as Mₙ(ℝ).
 -- That is a vector space over the real numbers, of dimension n².
-example : finite_dimensional.findim ℝ (MnR n) = n ^ 2 :=
+example : finite_dimensional.finrank ℝ (MnR n) = n ^ 2 :=
 by simp [pow_two]   -- rw [matrix.findim_matrix, fintype.card_fin, nat.pow_two]
 
 -- The addition law in the vector space of n × n matrices
@@ -33,10 +33,8 @@ by { funext i j, refl } -- matrix.add_val A B
 example (α : ℝ) : α • A = λ i j, α * (A i j) :=
 by { funext i j, refl } -- matrix.smul_val α A i j
 
--- Matrix is a vector space
--- ... noncomputable because it can't provide a basis for us
--- ... since vector_space allows for non-finite spaces
-noncomputable example : vector_space ℝ (MnR n) :=
+-- Matrix is a vector space, which only needs a `module`
+example : module ℝ (MnR n) :=
 by apply_instance
 -- ... so we can use a finite dimensional vector space instance
 example : finite_dimensional ℝ (MnR n) :=
@@ -49,8 +47,8 @@ example : ∃ (b : finset (MnR n)),
 begin
   obtain ⟨s, s_basis⟩ := finite_dimensional.exists_is_basis_finset ℝ (MnR n),
   refine ⟨s, s_basis, _⟩,
-  rw [←finite_dimensional.findim_eq_card_finset_basis s_basis,
-      matrix.findim_matrix, fintype.card, finset.card_fin, pow_two]
+  rw [←finite_dimensional.finrank_eq_card_finset_basis s_basis,
+      matrix.finrank_matrix, fintype.card, finset.card_fin, pow_two]
 end
 
 variables {m : ℕ}
@@ -63,8 +61,8 @@ example : ∃ (b : finset (matrix (fin m) (fin n) ℝ)),
 begin
   obtain ⟨s, s_basis⟩ := finite_dimensional.exists_is_basis_finset ℝ (matrix (fin m) (fin n) ℝ),
   refine ⟨s, s_basis, _⟩,
-  rw [←finite_dimensional.findim_eq_card_finset_basis s_basis,
-      matrix.findim_matrix],
+  rw [←finite_dimensional.finrank_eq_card_finset_basis s_basis,
+      matrix.finrank_matrix],
   repeat { rw [fintype.card, finset.card_fin] }
 end
 
@@ -216,8 +214,7 @@ end
 lemma det_2 (A : MnR 2) {a b c d : ℝ} (hA : A = ![![a, b], ![c, d]]) :
         matrix.det A = a * d - b * c :=
 begin
-  simp [matrix.det_apply, hA, finset.univ_perm_fin_succ, ←finset.univ_product_univ, finset.sum_product,
-        fin.sum_univ_succ, fin.prod_univ_succ],
+  simp [hA, matrix.det_succ_row_zero, fin.sum_univ_succ],
   ring
 end
 
@@ -379,7 +376,7 @@ example : abelian_group ℤ :=
   comm' := int.add_comm }
 
 -- Any vector space is an abelian group. Uses the proofs for groups already in mathlib
-example (K V : Type*) [field K] [add_comm_group V] [vector_space K V] : abelian_group V :=
+example (K V : Type*) [field K] [add_comm_group V] [module K V] : abelian_group V :=
 { op := (+),
   assoc' := λ _ _ _, (add_assoc _ _ _).symm,
   e := 0,
