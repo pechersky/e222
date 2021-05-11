@@ -41,12 +41,12 @@ example : finite_dimensional ℝ (MnR n) :=
 by apply_instance
 
 -- An n × n matrix has some finite basis of cardinality n ^ 2
-example : ∃ (b : finset (MnR n)),
-            (is_basis ℝ (subtype.val : (b : set (MnR n)) → (MnR n)) ∧
-            (finset.card b = n ^ 2)) :=
+example : ∃ (s : finset (MnR n))
+            (b : basis ((s : set (MnR n)) : Type*) ℝ (MnR n)),
+            (finset.card s = n ^ 2) :=
 begin
-  obtain ⟨s, s_basis⟩ := finite_dimensional.exists_is_basis_finset ℝ (MnR n),
-  refine ⟨s, s_basis, _⟩,
+  let s_basis := finite_dimensional.finset_basis ℝ (MnR n),
+  refine ⟨_, s_basis, _⟩,
   rw [←finite_dimensional.finrank_eq_card_finset_basis s_basis,
       matrix.finrank_matrix, fintype.card, finset.card_fin, pow_two]
 end
@@ -54,13 +54,12 @@ end
 variables {m : ℕ}
 
 -- An m × n matrix has some finite basis of cardinality m * n
-example : ∃ (b : finset (matrix (fin m) (fin n) ℝ)),
-            (is_basis ℝ
-              (subtype.val : (b : set (matrix (fin m) (fin n) ℝ)) → (matrix (fin m) (fin n) ℝ)) ∧
-            (finset.card b = m * n)) :=
+example : ∃ (s : finset (matrix (fin m) (fin n) ℝ))
+            (b : basis ((s : set (matrix (fin m) (fin n) ℝ)) : Type*) ℝ (matrix (fin m) (fin n) ℝ)),
+            (finset.card s = m * n) :=
 begin
-  obtain ⟨s, s_basis⟩ := finite_dimensional.exists_is_basis_finset ℝ (matrix (fin m) (fin n) ℝ),
-  refine ⟨s, s_basis, _⟩,
+  let s_basis := finite_dimensional.finset_basis ℝ (matrix (fin m) (fin n) ℝ),
+  refine ⟨_, s_basis, _⟩,
   rw [←finite_dimensional.finrank_eq_card_finset_basis s_basis,
       matrix.finrank_matrix],
   repeat { rw [fintype.card, finset.card_fin] }
