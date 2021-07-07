@@ -41,11 +41,10 @@ example : finite_dimensional ℝ (MnR n) :=
 by apply_instance
 
 -- An n × n matrix has some finite basis of cardinality n ^ 2
-example : ∃ (s : finset (MnR n))
-            (b : basis ((s : set (MnR n)) : Type*) ℝ (MnR n)),
+example : ∃ (s : finset (MnR n)) (b : basis s ℝ (MnR n)),
             (finset.card s = n ^ 2) :=
 begin
-  let s_basis := finite_dimensional.finset_basis ℝ (MnR n),
+  let s_basis := is_noetherian.finset_basis ℝ (MnR n),
   refine ⟨_, s_basis, _⟩,
   rw [←finite_dimensional.finrank_eq_card_finset_basis s_basis,
       matrix.finrank_matrix, fintype.card, finset.card_fin, pow_two]
@@ -54,11 +53,10 @@ end
 variables {m : ℕ}
 
 -- An m × n matrix has some finite basis of cardinality m * n
-example : ∃ (s : finset (matrix (fin m) (fin n) ℝ))
-            (b : basis ((s : set (matrix (fin m) (fin n) ℝ)) : Type*) ℝ (matrix (fin m) (fin n) ℝ)),
+example : ∃ (s : finset (matrix (fin m) (fin n) ℝ)) (b : basis s ℝ (matrix (fin m) (fin n) ℝ)),
             (finset.card s = m * n) :=
 begin
-  let s_basis := finite_dimensional.finset_basis ℝ (matrix (fin m) (fin n) ℝ),
+  let s_basis := is_noetherian.finset_basis ℝ (matrix (fin m) (fin n) ℝ),
   refine ⟨_, s_basis, _⟩,
   rw [←finite_dimensional.finrank_eq_card_finset_basis s_basis,
       matrix.finrank_matrix],
@@ -404,7 +402,7 @@ variables {R n : Type*} [comm_ring R] [fintype n] [decidable_eq n]
 
 -- The definition of GLₙ(ℝ) is group-equivalent to the mathlib definition
 example {n : ℕ} : (GLₙ n ℝ) ≃* linear_map.general_linear_group ℝ (fin n → ℝ) :=
-units.map_equiv (@linear_map.to_matrix_alg_equiv' ℝ _ (fin n) _ _).symm
+units.map_equiv to_lin_alg_equiv'.to_mul_equiv
 
 -- The symmetric group, as permutations of `fin n`
 notation `Sₙ ` n := equiv.perm (fin n)
