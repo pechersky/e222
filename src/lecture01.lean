@@ -327,38 +327,35 @@ end
 
 class group (α : Type*) :=
 (op : α → α → α)
-(assoc' : ∀ g h k : α, op g (op h k) = op (op g h) k)
+(infixl `ᵍ*`:70 := op)
+(assoc' : ∀ g h k : α, g ᵍ* (h ᵍ* k) = (g ᵍ* h) ᵍ* k)
 (e : α)
-(op_e' : ∀ g, op g e = g)
-(e_op' : ∀ g, op e g = g)
+(notation `ᵍ1`:50 := e)
+(op_e' : ∀ g, g ᵍ* ᵍ1 = g)
+(e_op' : ∀ g, ᵍ1 ᵍ* g = g)
 (inv : α → α)
-(inv_op' : ∀ g, op (inv g) g = e)
-(op_inv' : ∀ g, op g (inv g) = e)
+(postfix `ᵍ⁻¹`:max := inv)
+(inv_op' : ∀ g, gᵍ⁻¹ ᵍ* g = e)
+(op_inv' : ∀ g, g ᵍ* gᵍ⁻¹ = e)
+
+infixl ` ᵍ* `:70 := group.op
+notation `ᵍ1` := group.e
+postfix `ᵍ⁻¹`:std.prec.max_plus := group.inv
 
 variables {α : Type*} [group α]
 
 namespace group
 
-instance : has_mul α := ⟨group.op⟩
-instance : has_one α := ⟨group.e⟩
-instance : has_inv α := ⟨group.inv⟩
-
-@[simp] lemma op_eq_mul (g h : α) : op g h = g * h := rfl
-@[simp] lemma e_eq_one : (group.e : α) = 1 := rfl
-@[simp] lemma inv_eq_inv (g : α) : inv g = g⁻¹ := rfl
-lemma mul_assoc (g h k : α) : g * (h * k) = (g * h) * k := group.assoc' _ _ _
-@[simp] lemma mul_one (g : α) : g * 1 = g := group.op_e' _
-@[simp] lemma one_mul (g : α) : 1 * g = g := group.e_op' _
-@[simp] lemma inv_mul (g : α) : g⁻¹ * g = 1 := inv_op' _
-@[simp] lemma mul_inv (g : α) : g * g⁻¹ = 1 := op_inv' _
+lemma mul_assoc (g h k : α) : g ᵍ* (h ᵍ* k) = (g ᵍ* h) ᵍ* k := group.assoc' _ _ _
+@[simp] lemma mul_one (g : α) : g ᵍ* ᵍ1 = g := group.op_e' _
+@[simp] lemma one_mul (g : α) : ᵍ1 ᵍ* g = g := group.e_op' _
+@[simp] lemma inv_mul (g : α) : gᵍ⁻¹ ᵍ* g = ᵍ1 := inv_op' _
+@[simp] lemma mul_inv (g : α) : g ᵍ* gᵍ⁻¹ = ᵍ1 := op_inv' _
 
 end group
 
 class abelian_group (α : Type*) extends group α :=
-(comm' : ∀ (g h : α), g * h = h * g)
-
-lemma abelian_group.comm {α : Type*} [abelian_group α] (g h : α) : g * h = h * g :=
-abelian_group.comm' _ _
+(comm : ∀ (g h : α), g ᵍ* h = h ᵍ* g)
 
 -- The integers are an abelian group
 example : abelian_group ℤ :=
@@ -370,7 +367,7 @@ example : abelian_group ℤ :=
   inv := λ x, -x,
   inv_op' := int.add_left_neg,
   op_inv' := int.add_right_neg,
-  comm' := int.add_comm }
+  comm := int.add_comm }
 
 -- Any vector space is an abelian group. Uses the proofs for groups already in mathlib
 example (K V : Type*) [field K] [add_comm_group V] [module K V] : abelian_group V :=
@@ -382,9 +379,10 @@ example (K V : Type*) [field K] [add_comm_group V] [module K V] : abelian_group 
   inv := λ x, -x,
   inv_op' := add_left_neg,
   op_inv' := add_right_neg,
-  comm' := add_comm }
+  comm := add_comm }
 
 -- The bijections (symmetries) of a type are a group
+-- this example has `(f * g)(x) = g(f(x))`
 example (T : Type*) : group (T ≃ T) :=
 { op := equiv.trans,
   assoc' := equiv.trans_assoc,
