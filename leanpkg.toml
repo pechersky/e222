@@ -1,8 +1,8 @@
 [package]
 name = "e222"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.31.0"
+lean_version = "leanprover-community/lean:3.32.1"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "5021c1f98e24c5b666f511cb777be176c74f052d"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "d821860fb019619bbdf24e3dfeca27136ebaee3b"}

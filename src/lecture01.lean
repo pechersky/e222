@@ -72,10 +72,10 @@ example : A * B = λ i j, ∑ k , A i k * B k j := rfl
 -- An n x n matrix represents a linear operator T : ℝⁿ → ℝⁿ
 -- ... vectors in ℝⁿ are represented by functions of (fin n) → ℝ
 -- ... linear maps are notated by →ₗ with an optional →ₗ[field R] parameter
-example : ∃ (T : (fin n → ℝ) →ₗ fin n → ℝ), T.to_matrix' = A :=
+example : ∃ (T : (fin n → ℝ) →ₗ[ℝ] fin n → ℝ), T.to_matrix' = A :=
 by { use A.to_lin', exact linear_map.to_matrix'_to_lin' _ }
 
-example : (MnR n) ≃ₗ ((fin n → ℝ) →ₗ fin n → ℝ) := matrix.to_lin'
+example : (MnR n) ≃ₗ[ℝ] ((fin n → ℝ) →ₗ[ℝ] fin n → ℝ) := matrix.to_lin'
 
 -- Multiplication of matrices is the composition of transformations
 example : A * B = (A.to_lin'.comp B.to_lin').to_matrix' :=
