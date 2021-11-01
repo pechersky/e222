@@ -44,6 +44,7 @@ by apply_instance
 example : ∃ (s : finset (MnR n)) (b : basis s ℝ (MnR n)),
             (finset.card s = n ^ 2) :=
 begin
+  letI : is_noetherian ℝ (MnR n) := is_noetherian.iff_fg.mpr (by apply_instance),
   let s_basis := is_noetherian.finset_basis ℝ (MnR n),
   refine ⟨_, s_basis, _⟩,
   rw [←finite_dimensional.finrank_eq_card_finset_basis s_basis,
@@ -56,6 +57,7 @@ variables {m : ℕ}
 example : ∃ (s : finset (matrix (fin m) (fin n) ℝ)) (b : basis s ℝ (matrix (fin m) (fin n) ℝ)),
             (finset.card s = m * n) :=
 begin
+  letI : is_noetherian ℝ (matrix (fin m) (fin n) ℝ) := is_noetherian.iff_fg.mpr (by apply_instance),
   let s_basis := is_noetherian.finset_basis ℝ (matrix (fin m) (fin n) ℝ),
   refine ⟨_, s_basis, _⟩,
   rw [←finite_dimensional.finrank_eq_card_finset_basis s_basis,

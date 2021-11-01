@@ -395,7 +395,7 @@ end
 -- in mathlib, this is defined directly in the properties of
 -- a group (via a monoid) to make definitional equality work better
 instance {G : Type*} [group G] : has_pow G ℤ := ⟨λ g z,
-  @gpow_rec _ ⟨ᵍ1⟩ ⟨(ᵍ*)⟩ ⟨λ x, xᵍ⁻¹⟩ z g⟩
+  @zpow_rec _ ⟨ᵍ1⟩ ⟨(ᵍ*)⟩ ⟨λ x, xᵍ⁻¹⟩ z g⟩
 
 lemma inv_mul_distrib (x y : G) :
   (x ᵍ* y)ᵍ⁻¹ = yᵍ⁻¹ ᵍ* xᵍ⁻¹ :=

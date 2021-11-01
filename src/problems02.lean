@@ -103,21 +103,20 @@ begin
             nat.sub_add_cancel, pow_order_of_eq_one],
         exact nat.succ_le_iff.mpr h },
       obtain ⟨k, hk⟩ := IH,
-      simp only [gpow_neg, units.coe_pow, gpow_coe_nat] at hk,
+      simp only [zpow_neg, units.coe_pow, zpow_coe_nat] at hk,
       use (k + (order_of x - 1)),
-      simp [gpow_sub_one, this, ←hk, pow_add] } },
+      simp [zpow_sub_one, this, ←hk, pow_add] } },
   { rintro ⟨k, rfl⟩,
     use k,
     simp },
 end
 
-
-example : (subgroup.gpowers M').carrier.image (units.coe_hom _)
+example : (subgroup.zpowers M').carrier.image (units.coe_hom _)
   = { 1, ![![(1 : ℤ), 1], ![-1, 0]], ![![0, 1], ![-1, -1]],
       -1, ![![-1, -1], ![1, 0]], ![![0, -1], ![1, 1]] } :=
 begin
   ext N,
-  simp_rw [set.mem_image, subgroup.mem_carrier, subgroup.mem_gpowers_iff],
+  simp_rw [set.mem_image, subgroup.mem_carrier, subgroup.mem_zpowers_iff],
   simp only [set.mem_insert_iff, set.mem_singleton_iff, exists_exists_eq_and,
              units.coe_hom_apply],
   rw units.exists_coe_gpow_iff_exists_coe_pow_of_order_of_pos,
