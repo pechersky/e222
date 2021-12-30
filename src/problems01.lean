@@ -15,10 +15,11 @@ example (n : ℕ) :
 begin
   induction n with n hn,
   { simp only [pow_two, nat.nat_zero_eq_zero, mul_zero, pow_zero],
+    norm_num,
     ext i j,
     fin_cases i;
     fin_cases j;
-    norm_num [matrix.one_apply] },
+    norm_num [matrix.one_apply, -matrix.cons_val'] },
   { suffices : n * (n + 1) / 2 + (n + 1) = (n + 1) * ((n + 1) + 1) / 2,
       { rw [pow_succ, hn],
         ext i j,

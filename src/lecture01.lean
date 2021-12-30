@@ -392,8 +392,8 @@ example (T : Type*) : group (T ≃ T) :=
   op_e' := equiv.trans_refl,
   e_op' := equiv.refl_trans,
   inv := equiv.symm,
-  inv_op' := equiv.symm_trans,
-  op_inv' := equiv.trans_symm }
+  inv_op' := equiv.symm_trans_self,
+  op_inv' := equiv.self_trans_symm }
 
 end
 

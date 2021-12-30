@@ -69,7 +69,7 @@ by rw [pow_bit0, h3, neg_mul_neg, _root_.one_mul]
 lemma hinv : M * M ^ 5 = 1 :=
 by rw [←pow_succ, h6]
 
-abbreviation M' : GLₙ 2 ℤ := (⟨M, M ^ 5, hinv, matrix.nonsing_inv_right_left hinv⟩ : GLₙ 2 ℤ)
+abbreviation M' : GLₙ 2 ℤ := (⟨M, M ^ 5, hinv, matrix.mul_eq_one_comm.mp hinv⟩ : GLₙ 2 ℤ)
 
 lemma ho : order_of M' = 6 :=
 begin

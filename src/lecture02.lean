@@ -67,8 +67,8 @@ instance (T : Type*) : group (Sym T) :=
   op_e' := equiv.trans_refl,
   e_op' := equiv.refl_trans,
   inv := equiv.symm,
-  inv_op' := equiv.trans_symm,
-  op_inv' := equiv.symm_trans }
+  inv_op' := equiv.self_trans_symm,
+  op_inv' := equiv.symm_trans_self }
 
 -- helper lemmas to associate symmetry multiplication with application
 @[simp] lemma mul_apply {T : Type*} (f g : Sym T) (x : T) :
